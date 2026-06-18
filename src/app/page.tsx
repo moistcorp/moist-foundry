@@ -1,65 +1,87 @@
-import Image from "next/image";
+import Link from 'next/link'
+
+const steps = [
+  { num: '01', title: 'Choose your product', desc: 'Pick from our catalogue of garments — tees, hoodies, polos, totes, and more.' },
+  { num: '02', title: 'Configure & upload', desc: 'Select fabric color, print placement, and upload your artwork. We handle the rest.' },
+  { num: '03', title: 'We produce & ship', desc: 'Your order goes into production. Delivered in 35 days or less, with full tracking.' },
+]
+
+const stats = [
+  { value: '50 pcs', label: 'Minimum order quantity' },
+  { value: '35 days', label: 'Average production time' },
+  { value: '100%', label: 'Supply chain transparency' },
+]
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      {/* Hero */}
+      <section className="max-w-7xl mx-auto px-6 pt-24 pb-20">
+        <p className="text-sm text-[#C1623D] font-medium mb-4 tracking-wide uppercase">Custom apparel, made to order</p>
+        <h1 className="text-5xl md:text-7xl font-bold text-[#2B2B2B] leading-tight max-w-3xl mb-8">
+          Design it.<br />We'll make it.
+        </h1>
+        <p className="text-lg text-[#2B2B2B]/60 max-w-xl mb-10">
+          Small batch custom apparel for brands, cafes, and companies. MOQ 50 pieces. Ships in 35 days. Full visibility from fabric to delivery.
+        </p>
+        <div className="flex flex-wrap gap-4">
+          <Link
+            href="/configure"
+            className="bg-[#2B2B2B] text-[#F5F1EA] px-7 py-3.5 rounded-sm hover:bg-[#C1623D] transition-colors text-sm font-medium"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Start designing
+          </Link>
+          <Link
+            href="/catalogue"
+            className="border border-[#2B2B2B] text-[#2B2B2B] px-7 py-3.5 rounded-sm hover:bg-[#2B2B2B] hover:text-[#F5F1EA] transition-colors text-sm font-medium"
           >
-            Documentation
-          </a>
+            View catalogue
+          </Link>
         </div>
-      </main>
-    </div>
-  );
+      </section>
+
+      {/* Stats */}
+      <section className="bg-[#2B2B2B] py-12">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-3 gap-8 text-center">
+          {stats.map(s => (
+            <div key={s.value}>
+              <p className="text-3xl font-bold text-[#C1623D]">{s.value}</p>
+              <p className="text-sm text-[#F5F1EA]/60 mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="max-w-7xl mx-auto px-6 py-24">
+        <p className="text-sm text-[#C1623D] font-medium mb-2 tracking-wide uppercase">The process</p>
+        <h2 className="text-4xl font-bold mb-16">How it works</h2>
+        <div className="grid md:grid-cols-3 gap-12">
+          {steps.map(s => (
+            <div key={s.num}>
+              <p className="text-5xl font-bold text-[#2B2B2B]/10 mb-4">{s.num}</p>
+              <h3 className="text-lg font-semibold mb-2">{s.title}</h3>
+              <p className="text-[#2B2B2B]/60 text-sm leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="max-w-7xl mx-auto px-6 pb-24">
+        <div className="bg-[#C1623D] rounded-sm p-12 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h2 className="text-3xl font-bold text-white mb-2">Ready to build your merch?</h2>
+            <p className="text-white/70 text-sm">Start with 50 pieces. Scale as you grow.</p>
+          </div>
+          <Link
+            href="/configure"
+            className="bg-white text-[#C1623D] px-7 py-3.5 rounded-sm font-medium text-sm hover:bg-[#F5F1EA] transition-colors whitespace-nowrap"
+          >
+            Start designing
+          </Link>
+        </div>
+      </section>
+    </>
+  )
 }
