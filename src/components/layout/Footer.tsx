@@ -17,7 +17,7 @@ export default function Footer() {
         </div>
         <div className="flex flex-col gap-2">
           <a href="https://moistcorp.com" target="_blank" className="hover:text-[#111111] transition-colors">Moist Corp</a>
-          <a href="mailto:hello@moistfoundry.com" className="hover:text-[#111111] transition-colors">hello@moistfoundry.com</a>
+          <a href="mailto:moistfoundry@moistcorp.com" className="hover:text-[#111111] transition-colors">moistfoundry@moistcorp.com</a>
         </div>
       </div>
       <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-[#E5E5E5] text-xs text-[#111111]/30">
