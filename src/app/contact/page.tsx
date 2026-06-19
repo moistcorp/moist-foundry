@@ -10,10 +10,19 @@ export default function Contact() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitted(true)
-  }
+  const submit = async (e: React.FormEvent) => {
+  e.preventDefault()
+  await fetch('/api/send-confirmation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: form.name,
+      email: form.email,
+      type: 'contact'
+    })
+  })
+  setSubmitted(true)
+}
 
   const inputClass = "border border-[#E5E5E5] bg-white px-4 py-3 text-sm focus:outline-none focus:border-[#111111] transition-colors"
 

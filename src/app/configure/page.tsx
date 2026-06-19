@@ -538,7 +538,19 @@ export default function Configure() {
 
           <button
             type="button"
-            onClick={() => canSubmit() && setSubmitted(true)}
+            onClick={async () => {
+  if (!canSubmit()) return
+  await fetch('/api/send-confirmation', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: details.name,
+      email: details.email,
+      type: 'configure'
+    })
+  })
+  setSubmitted(true)
+}}
             disabled={!canSubmit()}
             className={`w-full py-3.5 text-sm font-medium rounded-sm transition-colors ${
               canSubmit()
