@@ -27,12 +27,6 @@ function getDiscount(qty: number): number {
   return 0.22
 }
 
-function getLabel(qty: number): string {
-  const d = getDiscount(qty)
-  if (d === 0) return ''
-  return `${(d * 100).toFixed(0)}% volume discount applied`
-}
-
 export default function Pricing() {
   const [qty, setQty] = useState<number>(50)
   const [selected, setSelected] = useState<string>('T-Shirt')
@@ -43,41 +37,34 @@ export default function Pricing() {
   const totalEx = pricePerPiece * qty
   const gstAmount = Math.round(totalEx * product.gst / 100)
   const totalInc = totalEx + gstAmount
-  const label = getLabel(qty)
 
   return (
     <>
-      {/* Header */}
       <section className="max-w-7xl mx-auto px-6 pt-20 pb-12">
-        <p className="text-sm text-[#C1623D] font-medium mb-4 tracking-wide uppercase">Pricing</p>
-        <h1 className="text-5xl font-bold text-[#2B2B2B] max-w-xl leading-tight mb-4">
+        <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">Pricing</p>
+        <h1 className="text-5xl font-bold text-[#111111] max-w-xl leading-tight mb-4 tracking-tight">
           Simple, transparent pricing
         </h1>
-        <p className="text-[#2B2B2B]/60 max-w-lg text-lg">
+        <p className="text-[#111111]/50 max-w-lg text-lg">
           No hidden fees. Prices include printing. GST extra. Volume discounts applied automatically.
         </p>
       </section>
 
-      {/* Estimator */}
       <section className="max-w-7xl mx-auto px-6 pb-24">
         <div className="grid md:grid-cols-2 gap-12">
-
-          {/* Controls */}
           <div className="flex flex-col gap-8">
-
-            {/* Product picker */}
             <div>
-              <label className="text-sm font-medium block mb-3">Select product</label>
+              <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest block mb-3">Select product</label>
               <div className="grid grid-cols-2 gap-2">
                 {products.map(p => (
                   <button
                     key={p.name}
                     type="button"
                     onClick={() => setSelected(p.name)}
-                    className={`px-4 py-2.5 text-sm rounded-sm border text-left transition-colors ${
+                    className={`px-4 py-2.5 text-xs text-left border transition-colors ${
                       selected === p.name
-                        ? 'bg-[#2B2B2B] text-[#F5F1EA] border-[#2B2B2B]'
-                        : 'border-[#2B2B2B]/20 hover:border-[#2B2B2B] text-[#2B2B2B]'
+                        ? 'bg-[#111111] text-white border-[#111111]'
+                        : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111] hover:text-[#111111]'
                     }`}
                   >
                     {p.name}
@@ -86,42 +73,30 @@ export default function Pricing() {
               </div>
             </div>
 
-            {/* Quantity slider */}
             <div>
               <div className="flex justify-between items-center mb-3">
-                <label className="text-sm font-medium">Quantity</label>
-                <span className="text-sm font-bold text-[#C1623D]">{qty} pcs</span>
+                <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest">Quantity</label>
+                <span className="text-sm font-bold text-[#111111]">{qty} pcs</span>
               </div>
               <input
-  type="range"
-  min={50}
-  max={1000}
-  step={50}
-  value={qty}
-  onChange={(e) => setQty(Number(e.target.value))}
-  onInput={(e) => setQty(Number((e.target as HTMLInputElement).value))}
-  className="w-full accent-[#C1623D]"
-/>
-              <div className="flex justify-between text-xs text-[#2B2B2B]/40 mt-1">
-                <span>50 pcs</span>
-                <span>1000 pcs</span>
+                type="range" min={50} max={1000} step={50} value={qty}
+                onChange={(e) => setQty(Number(e.target.value))}
+                onInput={(e) => setQty(Number((e.target as HTMLInputElement).value))}
+                className="w-full accent-[#111111]"
+              />
+              <div className="flex justify-between text-xs text-[#111111]/30 mt-1">
+                <span>50 pcs</span><span>1000 pcs</span>
               </div>
             </div>
 
-            {/* Volume tiers */}
             <div>
-              <p className="text-sm font-medium mb-3">Volume discounts</p>
-              <div className="flex flex-col gap-1">
+              <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-3">Volume discounts</p>
+              <div className="flex flex-col gap-1 border border-[#E5E5E5]">
                 {tiers.map(t => (
-                  <div
-                    key={t.min}
-                    className={`flex justify-between text-sm px-3 py-2 rounded-sm transition-colors ${
-                      getDiscount(qty) === t.discount
-                        ? 'bg-[#C1623D]/10 text-[#C1623D] font-medium'
-                        : 'text-[#2B2B2B]/50'
-                    }`}
-                  >
-                    <span>{t.min}{t.max === 1000 && t.min === 1000 ? '+' : t.max === 1000 ? `–${t.max}` : `–${t.max}`} pcs</span>
+                  <div key={t.min} className={`flex justify-between text-xs px-4 py-3 transition-colors ${
+                    getDiscount(qty) === t.discount ? 'bg-[#111111] text-white' : 'text-[#111111]/40'
+                  }`}>
+                    <span>{t.min}{t.min === 1000 ? '+' : `-${t.max}`} pcs</span>
                     <span>{t.discount === 0 ? 'Base price' : `${(t.discount * 100).toFixed(0)}% off`}</span>
                   </div>
                 ))}
@@ -129,64 +104,52 @@ export default function Pricing() {
             </div>
           </div>
 
-          {/* Output */}
-          <div className="flex flex-col gap-6">
-            <div className="bg-[#2B2B2B] rounded-sm p-8 text-[#F5F1EA]">
-              <p className="text-sm text-[#F5F1EA]/50 mb-1">Estimated price for</p>
-              <p className="text-lg font-semibold mb-6">{selected} &times; {qty} pcs</p>
-
-              <div className="flex flex-col gap-3 border-t border-[#F5F1EA]/10 pt-6">
+          <div className="flex flex-col gap-4">
+            <div className="bg-[#111111] p-8 text-white">
+              <p className="text-xs text-white/40 mb-1 uppercase tracking-widest">Estimate for</p>
+              <p className="text-base font-semibold mb-6">{selected} &times; {qty} pcs</p>
+              <div className="flex flex-col gap-3 border-t border-white/10 pt-6">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#F5F1EA]/60">Price per piece</span>
+                  <span className="text-white/50">Price per piece</span>
                   <span>&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#C1623D]">{label}</span>
-                    <span className="text-[#C1623D]">-{(discount * 100).toFixed(0)}%</span>
+                    <span className="text-white/50">Volume discount</span>
+                    <span>-{(discount * 100).toFixed(0)}%</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#F5F1EA]/60">Subtotal (ex. GST)</span>
+                  <span className="text-white/50">Subtotal (ex. GST)</span>
                   <span>&#8377;{totalEx.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#F5F1EA]/60">GST ({product.gst}%)</span>
+                  <span className="text-white/50">GST ({product.gst}%)</span>
                   <span>&#8377;{gstAmount.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between text-lg font-bold border-t border-[#F5F1EA]/10 pt-4 mt-2">
+                <div className="flex justify-between text-base font-bold border-t border-white/10 pt-4 mt-1">
                   <span>Total estimate</span>
                   <span>&#8377;{totalInc.toLocaleString('en-IN')}</span>
                 </div>
               </div>
-
-              <p className="text-xs text-[#F5F1EA]/30 mt-6">
-                Estimates include standard single-colour print. Final quote may vary based on artwork complexity, print technique, and shipping.
+              <p className="text-xs text-white/20 mt-6 leading-relaxed">
+                Estimates include standard single-colour print. Final quote may vary based on artwork complexity and shipping.
               </p>
             </div>
-
-            <Link
-              href="/contact"
-              className="bg-[#C1623D] text-white text-sm font-medium px-6 py-4 rounded-sm text-center hover:opacity-90 transition"
-            >
+            <Link href="/contact" className="bg-[#111111] text-white text-sm font-medium px-6 py-4 text-center hover:bg-black transition">
               Get a firm quote
             </Link>
-
-            <Link
-              href="/configure"
-              className="border border-[#2B2B2B] text-[#2B2B2B] text-sm font-medium px-6 py-4 rounded-sm text-center hover:bg-[#2B2B2B] hover:text-[#F5F1EA] transition"
-            >
+            <Link href="/configure" className="border border-[#111111] text-[#111111] text-sm font-medium px-6 py-4 text-center hover:bg-[#111111] hover:text-white transition">
               Start designing instead
             </Link>
           </div>
         </div>
       </section>
 
-      {/* What's included */}
-      <section className="bg-[#F5F1EA] border-t border-[#2B2B2B]/10 py-16">
+      <section className="bg-[#F7F7F7] border-t border-[#E5E5E5] py-16">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-2xl font-bold mb-8">What&apos;s included in every order</h2>
-          <div className="grid md:grid-cols-4 gap-6">
+          <h2 className="text-2xl font-bold mb-8 tracking-tight">What&apos;s included in every order</h2>
+          <div className="grid md:grid-cols-4 gap-8">
             {[
               { title: 'Sampling', desc: 'Pre-production sample before bulk run' },
               { title: 'QA checks', desc: 'Every piece inspected before packing' },
@@ -194,8 +157,8 @@ export default function Pricing() {
               { title: 'Print setup', desc: 'Screen setup and artwork prep included' },
             ].map(i => (
               <div key={i.title}>
-                <p className="font-semibold mb-1">{i.title}</p>
-                <p className="text-sm text-[#2B2B2B]/60">{i.desc}</p>
+                <p className="font-semibold text-sm mb-1">{i.title}</p>
+                <p className="text-xs text-[#111111]/50 leading-relaxed">{i.desc}</p>
               </div>
             ))}
           </div>

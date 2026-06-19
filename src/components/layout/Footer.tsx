@@ -1,26 +1,26 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#2B2B2B]/10 mt-24 px-6 py-12">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8 text-sm text-[#2B2B2B]/70">
+    <footer className="border-t border-[#E5E5E5] mt-24 px-6 py-12 bg-white">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-10 text-sm text-[#111111]/50">
         <div>
-          <p className="font-bold text-[#2B2B2B] text-base mb-1">Moist Foundry</p>
-          <p>Powered by Moist Corp</p>
-          <p>Greater Noida, Uttar Pradesh, India</p>
+          <Image src="/logo3.png" alt="Moist Foundry" width={120} height={36} className="h-8 w-auto object-contain mb-3" />
         </div>
         <div className="flex flex-col gap-2">
-          <Link href="/catalogue" className="hover:text-[#C1623D]">Catalogue</Link>
-          <Link href="/how-it-works" className="hover:text-[#C1623D]">How it works</Link>
-          <Link href="/pricing" className="hover:text-[#C1623D]">Pricing</Link>
-          <Link href="/contact" className="hover:text-[#C1623D]">Contact</Link>
+          <Link href="/catalogue" className="hover:text-[#111111] transition-colors">Catalogue</Link>
+          <Link href="/how-it-works" className="hover:text-[#111111] transition-colors">How it works</Link>
+          <Link href="/pricing" className="hover:text-[#111111] transition-colors">Pricing</Link>
+          <Link href="/journal" className="hover:text-[#111111] transition-colors">Journal</Link>
+          <Link href="/contact" className="hover:text-[#111111] transition-colors">Contact</Link>
         </div>
         <div className="flex flex-col gap-2">
-          <a href="https://moistcorp.com" target="_blank" className="hover:text-[#C1623D]">Moist Corp</a>
-          <a href="mailto:hello@moistfoundry.com" className="hover:text-[#C1623D]">hello@moistfoundry.com</a>
+          <a href="https://moistcorp.com" target="_blank" className="hover:text-[#111111] transition-colors">Moist Corp</a>
+          <a href="mailto:hello@moistfoundry.com" className="hover:text-[#111111] transition-colors">hello@moistfoundry.com</a>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto mt-8 text-xs text-[#2B2B2B]/40">
+      <div className="max-w-7xl mx-auto mt-10 pt-6 border-t border-[#E5E5E5] text-xs text-[#111111]/30">
         © {new Date().getFullYear()} Moist Foundry. All rights reserved.
       </div>
     </footer>

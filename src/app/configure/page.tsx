@@ -99,12 +99,12 @@ function GarmentSVG({ color, placements: activePlacements, frontPreview, backPre
         {/* Front print area indicator */}
         {showFront && activePlacements.includes('Front') && !frontPreview && (
           <rect x="120" y="130" width="60" height="60" rx="2"
-            fill="none" stroke="#C1623D" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7"/>
+            fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7"/>
         )}
         {/* Back print area indicator */}
         {!showFront && activePlacements.includes('Back') && !backPreview && (
           <rect x="120" y="130" width="60" height="60" rx="2"
-            fill="none" stroke="#C1623D" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7"/>
+            fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7"/>
         )}
         {/* Artwork preview */}
         {showFront && frontPreview && activePlacements.includes('Front') && (
@@ -115,10 +115,10 @@ function GarmentSVG({ color, placements: activePlacements, frontPreview, backPre
         )}
         {/* Sleeve indicators */}
         {activePlacements.includes('Left Sleeve') && (
-          <text x="48" y="145" fontSize="7" fill="#C1623D" opacity="0.8" textAnchor="middle">LOGO</text>
+          <text x="48" y="145" fontSize="7" fill="#111111" opacity="0.8" textAnchor="middle">LOGO</text>
         )}
         {activePlacements.includes('Right Sleeve') && (
-          <text x="252" y="145" fontSize="7" fill="#C1623D" opacity="0.8" textAnchor="middle">LOGO</text>
+          <text x="252" y="145" fontSize="7" fill="#111111" opacity="0.8" textAnchor="middle">LOGO</text>
         )}
       </svg>
     </div>
@@ -175,20 +175,20 @@ export default function Configure() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-6">
         <div className="max-w-md text-center">
-          <div className="w-16 h-16 bg-[#C1623D]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C1623D" strokeWidth="2.5">
+          <div className="w-16 h-16 bg-[#111111]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-[#2B2B2B] mb-3">Request received</h1>
-          <p className="text-[#2B2B2B]/60 mb-2 text-sm">
+          <h1 className="text-3xl font-bold text-[#111111] mb-3">Request received</h1>
+          <p className="text-[#111111]/60 mb-2 text-sm">
             Thanks {details.name.split(' ')[0]}. We&apos;ll review your configuration and send a detailed quote to
           </p>
-          <p className="font-medium text-[#2B2B2B] mb-8">{details.email}</p>
-          <p className="text-xs text-[#2B2B2B]/40 mb-8">Expected response within 24 hours</p>
+          <p className="font-medium text-[#111111] mb-8">{details.email}</p>
+          <p className="text-xs text-[#111111]/40 mb-8">Expected response within 24 hours</p>
           <a
             href="/"
-            className="inline-block bg-[#2B2B2B] text-[#F5F1EA] px-6 py-3 rounded-sm text-sm font-medium hover:bg-[#C1623D] transition-colors"
+            className="inline-block bg-[#111111] text-[#F7F7F7] px-6 py-3 rounded-sm text-sm font-medium hover:bg-[#111111] transition-colors"
           >
             Back to home
           </a>
@@ -201,17 +201,17 @@ export default function Configure() {
     <div className="flex flex-col lg:flex-row min-h-[calc(100vh-72px)]">
 
       {/* LEFT — Garment preview */}
-      <div className="lg:w-3/5 bg-[#F0EDE6] flex flex-col items-center justify-center p-8 lg:p-16 relative">
+      <div className="lg:w-3/5 bg-[#F7F7F7] flex flex-col items-center justify-center p-8 lg:p-16 relative">
 
         {/* View toggle */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex bg-white rounded-sm border border-[#2B2B2B]/10 overflow-hidden">
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex bg-white rounded-sm border border-[#111111]/10 overflow-hidden">
           {(['Front', 'Back'] as const).map(v => (
             <button
               key={v}
               type="button"
               onClick={() => setActiveView(v)}
               className={`px-5 py-2 text-xs font-medium transition-colors ${
-                activeView === v ? 'bg-[#2B2B2B] text-white' : 'text-[#2B2B2B]/60 hover:text-[#2B2B2B]'
+                activeView === v ? 'bg-[#111111] text-white' : 'text-[#111111]/60 hover:text-[#111111]'
               }`}
             >
               {v}
@@ -232,31 +232,31 @@ export default function Configure() {
 
         {/* Color + product label */}
         <div className="mt-6 text-center">
-          <p className="text-sm font-medium text-[#2B2B2B]">{product}</p>
-          <p className="text-xs text-[#2B2B2B]/50 mt-1">{color} colorway</p>
+          <p className="text-sm font-medium text-[#111111]">{product}</p>
+          <p className="text-xs text-[#111111]/50 mt-1">{color} colorway</p>
         </div>
 
         {/* Live estimate */}
         {totalQty >= 50 && (
-          <div className="mt-8 bg-white rounded-sm border border-[#2B2B2B]/10 px-6 py-4 text-center">
-            <p className="text-xs text-[#2B2B2B]/50 mb-1">Estimated total ({totalQty} pcs)</p>
-            <p className="text-2xl font-bold text-[#2B2B2B]">&#8377;{totalPrice.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-[#2B2B2B]/40 mt-1">&#8377;{pricePerPiece} per piece{discount > 0 ? ` · ${(discount * 100).toFixed(0)}% volume discount` : ''}</p>
+          <div className="mt-8 bg-white rounded-sm border border-[#111111]/10 px-6 py-4 text-center">
+            <p className="text-xs text-[#111111]/50 mb-1">Estimated total ({totalQty} pcs)</p>
+            <p className="text-2xl font-bold text-[#111111]">&#8377;{totalPrice.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-[#111111]/40 mt-1">&#8377;{pricePerPiece} per piece{discount > 0 ? ` · ${(discount * 100).toFixed(0)}% volume discount` : ''}</p>
           </div>
         )}
         {totalQty > 0 && totalQty < 50 && (
-          <div className="mt-8 bg-[#C1623D]/5 border border-[#C1623D]/20 rounded-sm px-6 py-3 text-center">
-            <p className="text-xs text-[#C1623D]">{50 - totalQty} more pieces needed to meet MOQ</p>
+          <div className="mt-8 bg-[#111111]/5 border border-[#111111]/20 rounded-sm px-6 py-3 text-center">
+            <p className="text-xs text-[#111111]">{50 - totalQty} more pieces needed to meet MOQ</p>
           </div>
         )}
       </div>
 
       {/* RIGHT — Controls */}
-      <div className="lg:w-2/5 bg-white flex flex-col border-l border-[#2B2B2B]/10">
+      <div className="lg:w-2/5 bg-white flex flex-col border-l border-[#111111]/10">
 
         {/* Panel tabs */}
-        <div className="border-b border-[#2B2B2B]/10 px-6 py-4">
-          <p className="text-xs text-[#2B2B2B]/40 uppercase tracking-wide mb-3">Configure</p>
+        <div className="border-b border-[#111111]/10 px-6 py-4">
+          <p className="text-xs text-[#111111]/40 uppercase tracking-wide mb-3">Configure</p>
           <div className="flex flex-wrap gap-2">
             {panels.map(p => (
               <button
@@ -265,8 +265,8 @@ export default function Configure() {
                 onClick={() => setPanel(p)}
                 className={`px-3 py-1.5 text-xs rounded-sm border capitalize transition-colors ${
                   panel === p
-                    ? 'bg-[#2B2B2B] text-white border-[#2B2B2B]'
-                    : 'border-[#2B2B2B]/15 text-[#2B2B2B]/60 hover:border-[#2B2B2B]/40'
+                    ? 'bg-[#111111] text-white border-[#111111]'
+                    : 'border-[#111111]/15 text-[#111111]/60 hover:border-[#111111]/40'
                 }`}
               >
                 {p}
@@ -289,15 +289,15 @@ export default function Configure() {
                   onClick={() => { setProduct(p.name); setTechnique('') }}
                   className={`p-4 border rounded-sm text-left transition-colors ${
                     product === p.name
-                      ? 'border-[#C1623D] bg-[#C1623D]/5'
-                      : 'border-[#2B2B2B]/15 hover:border-[#2B2B2B]/30'
+                      ? 'border-[#111111] bg-[#111111]/5'
+                      : 'border-[#111111]/15 hover:border-[#111111]/30'
                   }`}
                 >
                   <div className="flex justify-between items-start">
                     <p className="text-sm font-medium">{p.name}</p>
-                    <p className="text-xs text-[#2B2B2B]/50">from &#8377;{p.basePrice}</p>
+                    <p className="text-xs text-[#111111]/50">from &#8377;{p.basePrice}</p>
                   </div>
-                  <p className="text-xs text-[#2B2B2B]/40 mt-1">{p.techniques.join(' · ')}</p>
+                  <p className="text-xs text-[#111111]/40 mt-1">{p.techniques.join(' · ')}</p>
                 </button>
               ))}
             </div>
@@ -318,11 +318,11 @@ export default function Configure() {
                   >
                     <div
                       className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        color === c.name ? 'border-[#C1623D] scale-110' : 'border-[#2B2B2B]/15 hover:border-[#2B2B2B]/40'
+                        color === c.name ? 'border-[#111111] scale-110' : 'border-[#111111]/15 hover:border-[#111111]/40'
                       }`}
                       style={{ backgroundColor: c.hex }}
                     />
-                    <span className={`text-xs text-center leading-tight ${color === c.name ? 'text-[#C1623D] font-medium' : 'text-[#2B2B2B]/50'}`}>
+                    <span className={`text-xs text-center leading-tight ${color === c.name ? 'text-[#111111] font-medium' : 'text-[#111111]/50'}`}>
                       {c.name}
                     </span>
                   </button>
@@ -335,56 +335,56 @@ export default function Configure() {
           {panel === 'artwork' && (
             <div className="flex flex-col gap-5">
               <p className="text-sm font-medium">Upload artwork</p>
-              <p className="text-xs text-[#2B2B2B]/50 -mt-3">PNG, SVG, or JPG. Transparent background recommended.</p>
+              <p className="text-xs text-[#111111]/50 -mt-3">PNG, SVG, or JPG. Transparent background recommended.</p>
 
               {/* Front */}
               <div>
-                <p className="text-xs font-medium text-[#2B2B2B]/70 mb-2 uppercase tracking-wide">Front</p>
+                <p className="text-xs font-medium text-[#111111]/70 mb-2 uppercase tracking-wide">Front</p>
                 <input ref={frontRef} type="file" accept=".png,.svg,.jpg,.jpeg" className="hidden"
                   onChange={e => e.target.files?.[0] && handleArtwork(e.target.files[0], 'front')} />
                 {frontPreview ? (
-                  <div className="border border-[#2B2B2B]/15 rounded-sm p-3 flex items-center gap-3">
-                    <img src={frontPreview} alt="Front" className="w-12 h-12 object-contain rounded-sm bg-[#F5F1EA]" />
+                  <div className="border border-[#111111]/15 rounded-sm p-3 flex items-center gap-3">
+                    <img src={frontPreview} alt="Front" className="w-12 h-12 object-contain rounded-sm bg-[#F7F7F7]" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{frontArtwork?.name}</p>
-                      <p className="text-xs text-[#2B2B2B]/40">{((frontArtwork?.size ?? 0) / 1024).toFixed(0)} KB</p>
+                      <p className="text-xs text-[#111111]/40">{((frontArtwork?.size ?? 0) / 1024).toFixed(0)} KB</p>
                     </div>
                     <button type="button" onClick={() => { setFrontArtwork(null); setFrontPreview(null) }}
-                      className="text-xs text-[#C1623D] hover:underline shrink-0">Remove</button>
+                      className="text-xs text-[#111111] hover:underline shrink-0">Remove</button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => frontRef.current?.click()}
-                    className="w-full border-2 border-dashed border-[#2B2B2B]/15 rounded-sm py-8 flex flex-col items-center gap-2 hover:border-[#C1623D]/40 transition-colors">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2B2B" strokeWidth="1.5" opacity="0.3">
+                    className="w-full border-2 border-dashed border-[#111111]/15 rounded-sm py-8 flex flex-col items-center gap-2 hover:border-[#111111]/40 transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="1.5" opacity="0.3">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
                     </svg>
-                    <span className="text-xs text-[#2B2B2B]/40">Upload front artwork</span>
+                    <span className="text-xs text-[#111111]/40">Upload front artwork</span>
                   </button>
                 )}
               </div>
 
               {/* Back */}
               <div>
-                <p className="text-xs font-medium text-[#2B2B2B]/70 mb-2 uppercase tracking-wide">Back <span className="normal-case text-[#2B2B2B]/30 font-normal">(optional)</span></p>
+                <p className="text-xs font-medium text-[#111111]/70 mb-2 uppercase tracking-wide">Back <span className="normal-case text-[#111111]/30 font-normal">(optional)</span></p>
                 <input ref={backRef} type="file" accept=".png,.svg,.jpg,.jpeg" className="hidden"
                   onChange={e => e.target.files?.[0] && handleArtwork(e.target.files[0], 'back')} />
                 {backPreview ? (
-                  <div className="border border-[#2B2B2B]/15 rounded-sm p-3 flex items-center gap-3">
-                    <img src={backPreview} alt="Back" className="w-12 h-12 object-contain rounded-sm bg-[#F5F1EA]" />
+                  <div className="border border-[#111111]/15 rounded-sm p-3 flex items-center gap-3">
+                    <img src={backPreview} alt="Back" className="w-12 h-12 object-contain rounded-sm bg-[#F7F7F7]" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium truncate">{backArtwork?.name}</p>
-                      <p className="text-xs text-[#2B2B2B]/40">{((backArtwork?.size ?? 0) / 1024).toFixed(0)} KB</p>
+                      <p className="text-xs text-[#111111]/40">{((backArtwork?.size ?? 0) / 1024).toFixed(0)} KB</p>
                     </div>
                     <button type="button" onClick={() => { setBackArtwork(null); setBackPreview(null) }}
-                      className="text-xs text-[#C1623D] hover:underline shrink-0">Remove</button>
+                      className="text-xs text-[#111111] hover:underline shrink-0">Remove</button>
                   </div>
                 ) : (
                   <button type="button" onClick={() => backRef.current?.click()}
-                    className="w-full border-2 border-dashed border-[#2B2B2B]/15 rounded-sm py-8 flex flex-col items-center gap-2 hover:border-[#C1623D]/40 transition-colors">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2B2B" strokeWidth="1.5" opacity="0.3">
+                    className="w-full border-2 border-dashed border-[#111111]/15 rounded-sm py-8 flex flex-col items-center gap-2 hover:border-[#111111]/40 transition-colors">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="1.5" opacity="0.3">
                       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
                     </svg>
-                    <span className="text-xs text-[#2B2B2B]/40">Upload back artwork</span>
+                    <span className="text-xs text-[#111111]/40">Upload back artwork</span>
                   </button>
                 )}
               </div>
@@ -403,8 +403,8 @@ export default function Configure() {
                     onClick={() => togglePlacement(p)}
                     className={`p-4 border rounded-sm text-left text-sm transition-colors flex items-center justify-between ${
                       activePlacements.includes(p)
-                        ? 'border-[#C1623D] bg-[#C1623D]/5 text-[#C1623D]'
-                        : 'border-[#2B2B2B]/15 hover:border-[#2B2B2B]/30 text-[#2B2B2B]'
+                        ? 'border-[#111111] bg-[#111111]/5 text-[#111111]'
+                        : 'border-[#111111]/15 hover:border-[#111111]/30 text-[#111111]'
                     }`}
                   >
                     {p}
@@ -431,12 +431,12 @@ export default function Configure() {
                     onClick={() => setTechnique(t)}
                     className={`p-4 border rounded-sm text-left transition-colors ${
                       technique === t
-                        ? 'border-[#C1623D] bg-[#C1623D]/5'
-                        : 'border-[#2B2B2B]/15 hover:border-[#2B2B2B]/30'
+                        ? 'border-[#111111] bg-[#111111]/5'
+                        : 'border-[#111111]/15 hover:border-[#111111]/30'
                     }`}
                   >
                     <p className="text-sm font-medium">{t}</p>
-                    <p className="text-xs text-[#2B2B2B]/50 mt-0.5">{techniqueInfo[t]}</p>
+                    <p className="text-xs text-[#111111]/50 mt-0.5">{techniqueInfo[t]}</p>
                   </button>
                 ))}
               </div>
@@ -447,21 +447,21 @@ export default function Configure() {
           {panel === 'sizes' && (
             <div>
               <p className="text-sm font-medium mb-1">Size breakdown</p>
-              <p className="text-xs text-[#2B2B2B]/50 mb-4">Minimum 50 pieces total</p>
+              <p className="text-xs text-[#111111]/50 mb-4">Minimum 50 pieces total</p>
               <div className="flex flex-col gap-2">
                 {sizes.map(s => (
-                  <div key={s} className="flex items-center justify-between border border-[#2B2B2B]/15 rounded-sm px-4 py-3">
+                  <div key={s} className="flex items-center justify-between border border-[#111111]/15 rounded-sm px-4 py-3">
                     <span className="text-sm font-medium w-8">{s}</span>
                     <div className="flex items-center gap-3">
                       <button type="button"
                         onClick={() => setSizeQty(prev => ({ ...prev, [s]: Math.max(0, (prev[s] ?? 0) - 1) }))}
-                        className="w-7 h-7 border border-[#2B2B2B]/20 rounded-sm text-base leading-none hover:border-[#C1623D] hover:text-[#C1623D] transition-colors flex items-center justify-center">
+                        className="w-7 h-7 border border-[#111111]/20 rounded-sm text-base leading-none hover:border-[#111111] hover:text-[#111111] transition-colors flex items-center justify-center">
                         -
                       </button>
                       <span className="w-6 text-center text-sm font-medium">{sizeQty[s]}</span>
                       <button type="button"
                         onClick={() => setSizeQty(prev => ({ ...prev, [s]: (prev[s] ?? 0) + 1 }))}
-                        className="w-7 h-7 border border-[#2B2B2B]/20 rounded-sm text-base leading-none hover:border-[#C1623D] hover:text-[#C1623D] transition-colors flex items-center justify-center">
+                        className="w-7 h-7 border border-[#111111]/20 rounded-sm text-base leading-none hover:border-[#111111] hover:text-[#111111] transition-colors flex items-center justify-center">
                         +
                       </button>
                     </div>
@@ -469,7 +469,7 @@ export default function Configure() {
                 ))}
               </div>
               <div className={`mt-4 p-3 rounded-sm text-xs font-medium ${
-                totalQty >= 50 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-[#C1623D]/5 text-[#C1623D] border border-[#C1623D]/15'
+                totalQty >= 50 ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-[#111111]/5 text-[#111111] border border-[#111111]/15'
               }`}>
                 {totalQty >= 50
                   ? `${totalQty} pieces — good to go`
@@ -484,51 +484,51 @@ export default function Configure() {
               <p className="text-sm font-medium mb-1">Your details</p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#2B2B2B]/70">Full name *</label>
+                  <label className="text-xs font-medium text-[#111111]/70">Full name *</label>
                   <input type="text" value={details.name}
                     onChange={e => setDetails({ ...details, name: e.target.value })}
-                    className="border border-[#2B2B2B]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
+                    className="border border-[#111111]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#111111]"
                     placeholder="Rahul Sharma" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#2B2B2B]/70">Company *</label>
+                  <label className="text-xs font-medium text-[#111111]/70">Company *</label>
                   <input type="text" value={details.company}
                     onChange={e => setDetails({ ...details, company: e.target.value })}
-                    className="border border-[#2B2B2B]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
+                    className="border border-[#111111]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#111111]"
                     placeholder="Your Brand" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#2B2B2B]/70">Email *</label>
+                  <label className="text-xs font-medium text-[#111111]/70">Email *</label>
                   <input type="email" value={details.email}
                     onChange={e => setDetails({ ...details, email: e.target.value })}
-                    className="border border-[#2B2B2B]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
+                    className="border border-[#111111]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#111111]"
                     placeholder="you@company.com" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#2B2B2B]/70">Phone</label>
+                  <label className="text-xs font-medium text-[#111111]/70">Phone</label>
                   <input type="tel" value={details.phone}
                     onChange={e => setDetails({ ...details, phone: e.target.value })}
-                    className="border border-[#2B2B2B]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
+                    className="border border-[#111111]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#111111]"
                     placeholder="+91 98765 43210" />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#2B2B2B]/70">Notes</label>
+                <label className="text-xs font-medium text-[#111111]/70">Notes</label>
                 <textarea value={details.notes}
                   onChange={e => setDetails({ ...details, notes: e.target.value })}
                   rows={3} placeholder="Deadlines, special requirements..."
-                  className="border border-[#2B2B2B]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#C1623D] resize-none" />
+                  className="border border-[#111111]/20 bg-white px-3 py-2.5 text-sm rounded-sm focus:outline-none focus:border-[#111111] resize-none" />
               </div>
             </div>
           )}
         </div>
 
         {/* Bottom — order summary + submit */}
-        <div className="border-t border-[#2B2B2B]/10 px-6 py-5 flex flex-col gap-3">
+        <div className="border-t border-[#111111]/10 px-6 py-5 flex flex-col gap-3">
           {/* Mini summary */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#2B2B2B]/50">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#111111]/50">
             <span>{product}</span>
             {color && <span>{color}</span>}
             {technique && <span>{technique}</span>}
@@ -542,8 +542,8 @@ export default function Configure() {
             disabled={!canSubmit()}
             className={`w-full py-3.5 text-sm font-medium rounded-sm transition-colors ${
               canSubmit()
-                ? 'bg-[#C1623D] text-white hover:opacity-90'
-                : 'bg-[#2B2B2B]/10 text-[#2B2B2B]/30 cursor-not-allowed'
+                ? 'bg-[#111111] text-white hover:opacity-90'
+                : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
             }`}
           >
             {canSubmit() ? 'Submit request' : 'Complete all sections to submit'}

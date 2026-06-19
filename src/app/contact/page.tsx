@@ -1,12 +1,10 @@
 'use client'
-import { useState } from 'react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false)
-  const [form, setForm] = useState({
-    name: '', company: '', email: '', phone: '', type: '', message: ''
-  })
+  const [form, setForm] = useState({ name: '', company: '', email: '', phone: '', type: '', message: '' })
 
   const handle = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -14,77 +12,55 @@ export default function Contact() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: wire to email service (Resend/Brevo)
     setSubmitted(true)
   }
+
+  const inputClass = "border border-[#E5E5E5] bg-white px-4 py-3 text-sm focus:outline-none focus:border-[#111111] transition-colors"
 
   return (
     <>
       <section className="max-w-7xl mx-auto px-6 pt-20 pb-16">
-        <p className="text-sm text-[#C1623D] font-medium mb-4 tracking-wide uppercase">Get in touch</p>
-        <h1 className="text-5xl font-bold text-[#2B2B2B] max-w-xl leading-tight mb-6">
+        <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">Get in touch</p>
+        <h1 className="text-5xl font-bold text-[#111111] max-w-xl leading-tight mb-6 tracking-tight">
           Tell us about your project
         </h1>
-        <p className="text-[#2B2B2B]/60 max-w-lg text-lg">
+        <p className="text-[#111111]/50 max-w-lg text-lg">
           Fill in the form and we&apos;ll get back to you with a quote within 24 hours.
         </p>
       </section>
 
       <section className="max-w-7xl mx-auto px-6 pb-24 grid md:grid-cols-2 gap-16">
-
-        {/* Form */}
         <div>
           {submitted ? (
-            <div className="bg-[#2B2B2B] text-[#F5F1EA] p-10 rounded-sm">
+            <div className="bg-[#111111] text-white p-10">
               <h2 className="text-2xl font-bold mb-2">We&apos;ve got your request.</h2>
-              <p className="text-[#F5F1EA]/60">Our team will reach out within 24 hours with a detailed quote.</p>
+              <p className="text-white/50 text-sm">Our team will reach out within 24 hours with a detailed quote.</p>
             </div>
           ) : (
-            <form onSubmit={submit} className="flex flex-col gap-5">
+            <form onSubmit={submit} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">Full name *</label>
-                  <input
-                    name="name" required onChange={handle}
-                    className="border border-[#2B2B2B]/20 bg-white px-4 py-3 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
-                    placeholder="Rahul Sharma"
-                  />
+                  <label className="text-xs font-medium text-[#111111]/60 uppercase tracking-wide">Full name *</label>
+                  <input name="name" required onChange={handle} className={inputClass} placeholder="Rahul Sharma" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">Company *</label>
-                  <input
-                    name="company" required onChange={handle}
-                    className="border border-[#2B2B2B]/20 bg-white px-4 py-3 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
-                    placeholder="Your Brand"
-                  />
+                  <label className="text-xs font-medium text-[#111111]/60 uppercase tracking-wide">Company *</label>
+                  <input name="company" required onChange={handle} className={inputClass} placeholder="Your Brand" />
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">Email *</label>
-                  <input
-                    name="email" type="email" required onChange={handle}
-                    className="border border-[#2B2B2B]/20 bg-white px-4 py-3 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
-                    placeholder="you@company.com"
-                  />
+                  <label className="text-xs font-medium text-[#111111]/60 uppercase tracking-wide">Email *</label>
+                  <input name="email" type="email" required onChange={handle} className={inputClass} placeholder="you@company.com" />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium">Phone</label>
-                  <input
-                    name="phone" onChange={handle}
-                    className="border border-[#2B2B2B]/20 bg-white px-4 py-3 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
-                    placeholder="+91 98765 43210"
-                  />
+                  <label className="text-xs font-medium text-[#111111]/60 uppercase tracking-wide">Phone</label>
+                  <input name="phone" onChange={handle} className={inputClass} placeholder="+91 98765 43210" />
                 </div>
               </div>
-
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">What are you looking for? *</label>
-                <select
-                  name="type" required onChange={handle}
-                  className="border border-[#2B2B2B]/20 bg-white px-4 py-3 text-sm rounded-sm focus:outline-none focus:border-[#C1623D]"
-                >
+                <label className="text-xs font-medium text-[#111111]/60 uppercase tracking-wide">What are you looking for? *</label>
+                <select name="type" required onChange={handle} className={inputClass}>
                   <option value="">Select an option</option>
                   <option>T-shirts</option>
                   <option>Hoodies / Sweatshirts</option>
@@ -95,49 +71,36 @@ export default function Contact() {
                   <option>Not sure yet</option>
                 </select>
               </div>
-
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">Tell us more</label>
-                <textarea
-                  name="message" rows={5} onChange={handle}
-                  className="border border-[#2B2B2B]/20 bg-white px-4 py-3 text-sm rounded-sm focus:outline-none focus:border-[#C1623D] resize-none"
-                  placeholder="Quantity, timeline, any specific requirements..."
-                />
+                <label className="text-xs font-medium text-[#111111]/60 uppercase tracking-wide">Tell us more</label>
+                <textarea name="message" rows={5} onChange={handle} className={`${inputClass} resize-none`}
+                  placeholder="Quantity, timeline, any specific requirements..." />
               </div>
-
-              <button
-                type="submit"
-                className="bg-[#2B2B2B] text-[#F5F1EA] px-6 py-3.5 text-sm font-medium rounded-sm hover:bg-[#C1623D] transition-colors"
-              >
+              <button type="submit" className="bg-[#111111] text-white px-6 py-3.5 text-sm font-medium hover:bg-black transition-colors">
                 Submit request
               </button>
             </form>
           )}
         </div>
 
-        {/* Info */}
         <div className="flex flex-col gap-10 pt-2">
+          {[
+            { label: 'Location', content: 'Moist Corp\nGreater Noida, Uttar Pradesh\nIndia' },
+            { label: 'Email', content: 'hello@moistfoundry.com', isEmail: true },
+            { label: 'MOQ & Turnaround', content: '50 pieces minimum. 35-day standard production. Rush available on request.' },
+          ].map(item => (
+            <div key={item.label}>
+              <p className="text-xs font-medium text-[#111111]/40 mb-2 uppercase tracking-widest">{item.label}</p>
+              {item.isEmail ? (
+                <a href={`mailto:${item.content}`} className="text-sm text-[#111111] hover:underline">{item.content}</a>
+              ) : (
+                <p className="text-sm text-[#111111]/60 leading-relaxed whitespace-pre-line">{item.content}</p>
+              )}
+            </div>
+          ))}
           <div>
-            <p className="text-sm font-medium text-[#C1623D] mb-2 uppercase tracking-wide">Location</p>
-            <p className="text-[#2B2B2B]/70 leading-relaxed">Moist Corp<br />Greater Noida, Uttar Pradesh<br />India</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-[#C1623D] mb-2 uppercase tracking-wide">Email</p>
-            <a href="mailto:hello@moistfoundry.com" className="text-[#2B2B2B] hover:text-[#C1623D] transition-colors">
-              hello@moistfoundry.com
-            </a>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-[#C1623D] mb-2 uppercase tracking-wide">MOQ & Turnaround</p>
-            <p className="text-[#2B2B2B]/70">50 pieces minimum. 35-day standard production. Rush available on request.</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-[#C1623D] mb-2 uppercase tracking-wide">Or start directly</p>
-            
-             <Link
-              href="/configure"
-              className="inline-block border border-[#2B2B2B] text-[#2B2B2B] px-5 py-2.5 text-sm rounded-sm hover:bg-[#2B2B2B] hover:text-[#F5F1EA] transition-colors"
-            >
+            <p className="text-xs font-medium text-[#111111]/40 mb-2 uppercase tracking-widest">Or start directly</p>
+            <Link href="/configure" className="inline-block border border-[#111111] text-[#111111] px-5 py-2.5 text-sm hover:bg-[#111111] hover:text-white transition-colors">
               Open the configurator
             </Link>
           </div>
