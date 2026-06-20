@@ -76,9 +76,6 @@ export default function ProductPage() {
 
         {/* Info */}
         <div className="flex flex-col gap-6">
-          {product.tag && (
-            <span className="text-xs border border-[#111111] px-2.5 py-1 w-fit">{product.tag}</span>
-          )}
           <div>
             <h1 className="text-3xl font-bold text-[#111111] leading-tight tracking-tight mb-2">{product.name}</h1>
             <p className="text-2xl font-bold text-[#111111]">&#8377;{product.price.toLocaleString('en-IN')}</p>
