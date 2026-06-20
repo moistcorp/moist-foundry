@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { generateMeta } from '@/lib/seo'
-import Breadcrumbs from '@/components/ui/breadcrumbs'
+import Breadcrumbs from '@/components/ui/Breadcrumbs'
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const product = products.find(p => p.slug === params.slug)
