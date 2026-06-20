@@ -525,43 +525,83 @@ export default function Configure() {
           )}
         </div>
 
-        {/* Bottom — order summary + submit */}
-        <div className="border-t border-[#111111]/10 px-6 py-5 flex flex-col gap-3">
-          {/* Mini summary */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#111111]/50">
-            <span>{product}</span>
-            {color && <span>{color}</span>}
-            {technique && <span>{technique}</span>}
-            {activePlacements.length > 0 && <span>{activePlacements.join(', ')}</span>}
-            {totalQty > 0 && <span>{totalQty} pcs</span>}
-          </div>
+       {/* Bottom — order summary + submit */}
+<div className="border-t border-[#E5E5E5] px-6 py-5 flex flex-col gap-3">
+  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#111111]/40">
+    <span>{product}</span>
+    {color && <span>{color}</span>}
+    {technique && <span>{technique}</span>}
+    {activePlacements.length > 0 && <span>{activePlacements.join(', ')}</span>}
+    {totalQty > 0 && <span>{totalQty} pcs</span>}
+  </div>
 
-          <button
-            type="button"
-            onClick={async () => {
-  if (!canSubmit()) return
-  await fetch('/api/send-confirmation', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name: details.name,
-      email: details.email,
-      type: 'configure'
-    })
-  })
-  setSubmitted(true)
-}}
-            disabled={!canSubmit()}
-            className={`w-full py-3.5 text-sm font-medium rounded-sm transition-colors ${
-              canSubmit()
-                ? 'bg-[#111111] text-white hover:opacity-90'
-                : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
-            }`}
-          >
-            {canSubmit() ? 'Submit request' : 'Complete all sections to submit'}
-          </button>
-        </div>
-      </div>
+  {canSubmit() && (
+    <div className="bg-[#F7F7F7] border border-[#E5E5E5] p-3 text-xs text-[#111111]/60 leading-relaxed">
+      A <strong className="text-[#111111]">₹499 refundable reservation fee</strong> is collected to confirm your slot. The balance is invoiced separately via net banking.
     </div>
+  )}
+
+  <button
+    type="button"
+    onClick={async () => {
+      if (!canSubmit()) return
+
+      // Send confirmation email
+      await fetch('/api/send-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: details.name, email: details.email, type: 'configure' })
+      })
+
+      // Generate PayU hash and redirect
+      const txnid = 'MF' + Date.now()
+      const amount = '499.00'
+      const productinfo = `Reservation — ${product} x${totalQty} pcs`
+
+      const res = await fetch('/api/payu/hash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ txnid, amount, productinfo, firstname: details.name.split(' ')[0], email: details.email })
+      })
+      const { hash, key } = await res.json()
+
+      const payuForm = document.createElement('form')
+      payuForm.method = 'POST'
+      payuForm.action = process.env.NEXT_PUBLIC_PAYU_BASE_URL ?? 'https://test.payu.in/_payment'
+
+      const fields: Record<string, string> = {
+        key, txnid, amount, productinfo,
+        firstname: details.name.split(' ')[0],
+        lastname: details.name.split(' ').slice(1).join(' '),
+        email: details.email,
+        phone: details.phone || '9999999999',
+        surl: `${window.location.origin}/payment/success`,
+        furl: `${window.location.origin}/payment/failure`,
+        hash,
+      }
+
+      Object.entries(fields).forEach(([k, v]) => {
+        const input = document.createElement('input')
+        input.type = 'hidden'
+        input.name = k
+        input.value = v
+        payuForm.appendChild(input)
+      })
+
+      document.body.appendChild(payuForm)
+      payuForm.submit()
+    }}
+    disabled={!canSubmit()}
+    className={`w-full py-3.5 text-sm font-medium transition-colors ${
+      canSubmit()
+        ? 'bg-[#111111] text-white hover:bg-black'
+        : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
+    }`}
+  >
+    {canSubmit() ? 'Reserve slot — ₹499' : 'Complete all sections to continue'}
+  </button>
+</div>
+</div>
+</div>
   )
 }
