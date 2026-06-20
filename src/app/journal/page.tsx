@@ -1,4 +1,12 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
+import { generateMeta } from '@/lib/seo'
+
+export const metadata: Metadata = generateMeta({
+  title: 'Journal',
+  description: 'Production guides, industry insights, and notes on custom apparel from the Moist Foundry team.',
+  path: '/journal',
+})
 
 const posts = [
   { slug: 'why-low-moq-matters', title: 'Why low MOQ is a game changer for small brands', excerpt: 'Most manufacturers require 500+ pieces minimum. Here is why we built Moist Foundry around 50 — and what it means for brands just getting started.', date: 'June 12, 2025', category: 'Industry', readTime: '4 min read' },

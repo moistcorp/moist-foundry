@@ -1,6 +1,20 @@
 import { products } from '@/lib/products'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { generateMeta } from '@/lib/seo'
+import Breadcrumbs from '@/components/ui/breadcrumbs'
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const product = products.find(p => p.slug === params.slug)
+  if (!product) return generateMeta({ title: 'Product Not Found' })
+  return generateMeta({
+    title: product.name,
+    description: `${product.name} — ${product.gsm} GSM. ${product.description} MOQ 50 pieces.`,
+    path: `/catalogue/${product.slug}`,
+    image: product.image ?? undefined,
+  })
+}
 
 export default function CatalogueProduct({ params }: { params: { slug: string } }) {
   const product = products.find(p => p.slug === params.slug)

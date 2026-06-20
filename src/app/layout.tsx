@@ -8,8 +8,18 @@ import WhatsAppButton from '@/components/ui/WhatsAppButton'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Moist Foundry — Custom Apparel, Made to Order',
-  description: 'Small batch custom apparel for brands, cafes, and companies. MOQ 50. Ships in 35 days.',
+  title: {
+    default: 'Moist Foundry — Custom Apparel, Made to Order',
+    template: '%s — Moist Foundry',
+  },
+  description: 'Small batch custom apparel for brands, cafes, and companies. MOQ 50 pieces. Ships in 35 days. Manufactured in India.',
+  metadataBase: new URL('https://moistfoundry.com'),
+  openGraph: {
+    siteName: 'Moist Foundry',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  robots: { index: true, follow: true },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -18,8 +28,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${inter.className} bg-white text-[#111111]`}>
         <Navbar />
         <main>{children}</main>
-<WhatsAppButton />
         <Footer />
+        <WhatsAppButton />
       </body>
     </html>
   )

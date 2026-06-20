@@ -5,6 +5,8 @@ import { products } from '@/lib/products'
 import { useCartStore } from '@/lib/store'
 import Link from 'next/link'
 
+import Breadcrumbs from '@/components/ui/breadcrumbs'
+
 export default function ProductPage() {
   const { slug } = useParams()
   const router = useRouter()

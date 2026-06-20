@@ -1,5 +1,13 @@
 import Link from 'next/link'
 import { products } from '@/lib/products'
+import type { Metadata } from 'next'
+import { generateMeta } from '@/lib/seo'
+
+export const metadata: Metadata = generateMeta({
+  title: 'Shop',
+  description: 'Shop Moist Foundry\'s own line — designed and manufactured in-house. Heavyweight tees, hoodies, sweatpants, and more.',
+  path: '/shop',
+})
 
 export default function Shop() {
   return (

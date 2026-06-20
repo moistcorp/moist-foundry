@@ -1,4 +1,12 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
+import { generateMeta } from '@/lib/seo'
+
+export const metadata: Metadata = generateMeta({
+  title: 'How It Works',
+  description: 'From brief to delivery in 35 days. Learn how Moist Foundry handles custom apparel orders — configuration, production, QA, and shipping.',
+  path: '/how-it-works',
+})
 
 const steps = [
   { num: '01', title: 'Choose your garment', desc: 'Browse our catalogue of premium blanks — tees, hoodies, polos, totes, caps, and more. Every product is sourced for quality and consistency.' },

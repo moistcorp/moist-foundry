@@ -1,5 +1,13 @@
 'use client'
 import { useState, useRef } from 'react'
+import type { Metadata } from 'next'
+import { generateMeta } from '@/lib/seo'
+
+export const metadata: Metadata = generateMeta({
+  title: 'Configure Your Order',
+  description: 'Design your custom apparel online. Choose garment, fabric color, upload artwork, select print placement and technique.',
+  path: '/configure',
+})
 
 const products = [
   { name: 'T-Shirt', basePrice: 280, techniques: ['Screen Print', 'DTG', 'Embroidery'] },
@@ -548,10 +556,29 @@ export default function Configure() {
 
       // Send confirmation email
       await fetch('/api/send-confirmation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: details.name, email: details.email, type: 'configure' })
-      })
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: details.name,
+    email: details.email,
+    type: 'configure',
+    orderDetails: {
+      product,
+      color,
+      technique,
+      placements: activePlacements.join(', '),
+      totalQty,
+      sizeBreakdown: sizes
+        .filter(s => sizeQty[s] > 0)
+        .map(s => `${s}: ${sizeQty[s]}`)
+        .join(', '),
+      estimatedTotal: `₹${(Math.round(
+        (products.find(p => p.name === product)?.basePrice ?? 0) *
+        (1 - getDiscount(totalQty)) * totalQty
+      )).toLocaleString('en-IN')} (ex. GST)`,
+    }
+  })
+})
 
       // Generate PayU hash and redirect
       const txnid = 'MF' + Date.now()

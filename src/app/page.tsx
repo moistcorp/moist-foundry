@@ -1,6 +1,14 @@
 'use client'
 import Link from 'next/link'
 import { useState } from 'react'
+import type { Metadata } from 'next'
+import { generateMeta } from '@/lib/seo'
+
+export const metadata: Metadata = generateMeta({
+  title: 'Custom Apparel, Made to Order',
+  description: 'Small batch custom apparel for brands, cafes, and companies. MOQ 50 pieces. Ships in 35 days. Manufactured in Greater Noida, India.',
+  path: '/',
+})
 
 const steps = [
   { num: '01', title: 'Choose your product', desc: 'Pick from our catalogue — tees, hoodies, sweatshirts, totes, and more.' },
@@ -15,20 +23,23 @@ const stats = [
 ]
 
 const industries = [
-  { name: 'Hotels & Restaurants', desc: 'Staff uniforms, guest amenities, branded F&B merchandise.', icon: '🏨' },
-  { name: 'Music & Events', desc: 'Artist merch, crew wear, event uniforms and giveaways.', icon: '🎵' },
-  { name: 'Sports & Fitness', desc: 'Team kits, gym wear, performance and training apparel.', icon: '⚡' },
-  { name: 'Arts & Culture', desc: 'Gallery merch, cultural institution apparel, limited editions.', icon: '🎨' },
-  { name: 'Creative Studios', desc: 'Agency merch, studio wear, client gifting and onboarding kits.', icon: '✦' },
-  { name: 'Companies & Startups', desc: 'Employee swag, brand merchandise, conference and event kits.', icon: '◆' },
+  { name: 'Hotels & Restaurants', desc: 'Staff uniforms, guest amenities, branded F&B merchandise.', image: null },
+  { name: 'Music & Events', desc: 'Artist merch, crew wear, event uniforms and giveaways.', image: null },
+  { name: 'Sports & Fitness', desc: 'Team kits, gym wear, performance and training apparel.', image: null },
+  { name: 'Arts & Culture', desc: 'Gallery merch, cultural institution apparel, limited editions.', image: null },
+  { name: 'Creative Studios', desc: 'Agency merch, studio wear, client gifting and onboarding kits.', image: null },
+  { name: 'Companies & Startups', desc: 'Employee swag, brand merchandise, conference and event kits.', image: null },
 ]
 
-const estimatorProducts = [
-  { name: 'T-Shirt (200 GSM)', base: 280 },
-  { name: 'T-Shirt (260 GSM)', base: 340 },
+  const estimatorProducts = [
+  { name: 'Tee (200 GSM)', base: 280 },
+  { name: 'Tee (260 GSM)', base: 340 },
+  { name: 'Doctor Tee', base: 360 },
   { name: 'Long Sleeve', base: 420 },
   { name: 'Sweatshirt', base: 580 },
   { name: 'Hoodie', base: 650 },
+  { name: 'Sweatpants', base: 580 },
+  { name: 'Shorts', base: 320 },
   { name: 'Tote Bag', base: 180 },
 ]
 
@@ -169,20 +180,35 @@ export default function Home() {
       </section>
 
       {/* Industries */}
-      <section className="max-w-7xl mx-auto px-6 py-24">
-        <p className="text-xs text-[#111111]/40 font-medium mb-3 tracking-widest uppercase">Who we work with</p>
-        <h2 className="text-4xl font-bold mb-3 tracking-tight">Built for these industries</h2>
-        <p className="text-[#111111]/50 text-sm mb-12 max-w-lg">From hotel uniforms to event merch — Moist Foundry serves brands across sectors that take their visual identity seriously.</p>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E5E5E5]">
-          {industries.map(i => (
-            <div key={i.name} className="bg-white p-6 flex flex-col gap-3 hover:bg-[#F7F7F7] transition-colors">
-              <span className="text-2xl">{i.icon}</span>
-              <h3 className="text-sm font-semibold text-[#111111]">{i.name}</h3>
-              <p className="text-xs text-[#111111]/50 leading-relaxed">{i.desc}</p>
-            </div>
-          ))}
+<section className="max-w-7xl mx-auto px-6 py-24">
+  <p className="text-xs text-[#111111]/40 font-medium mb-3 tracking-widest uppercase">Who we work with</p>
+  <h2 className="text-4xl font-bold mb-3 tracking-tight">Built for these industries</h2>
+  <p className="text-[#111111]/50 text-sm mb-12 max-w-lg">
+    From hotel uniforms to event merch — Moist Foundry serves brands that take their visual identity seriously.
+  </p>
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E5E5E5]">
+    {industries.map(i => (
+      <div key={i.name} className="group bg-white flex flex-col hover:bg-[#F7F7F7] transition-colors">
+        {/* Image area — swap null for '/industries/hotels.jpg' etc when ready */}
+        <div className="w-full aspect-video bg-[#F7F7F7] flex items-center justify-center overflow-hidden">
+          {i.image ? (
+            <img
+              src={i.image}
+              alt={i.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <span className="text-xs text-[#111111]/20 uppercase tracking-widest">{i.name}</span>
+          )}
         </div>
-      </section>
+        <div className="p-5 flex flex-col gap-1.5">
+          <h3 className="text-sm font-semibold text-[#111111]">{i.name}</h3>
+          <p className="text-xs text-[#111111]/50 leading-relaxed">{i.desc}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
 
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-6 pb-24">
