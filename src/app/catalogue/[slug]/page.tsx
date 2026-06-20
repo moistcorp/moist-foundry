@@ -129,6 +129,40 @@ export default function CatalogueProduct({ params }: { params: { slug: string } 
           </div>
         </div>
       </div>
+
+      {/* Related products */}
+      {(() => {
+        const related = products
+          .filter(p => p.category === product.category && p.id !== product.id)
+          .slice(0, 3)
+
+        return related.length > 0 ? (
+          <section className="max-w-7xl mx-auto px-6 pb-24 border-t border-[#E5E5E5] pt-16">
+            <h2 className="text-sm font-medium uppercase tracking-widest text-[#111111]/40 mb-8">
+              More in {product.category}
+            </h2>
+            <div className="grid md:grid-cols-3 gap-px bg-[#E5E5E5]">
+              {related.map(p => (
+                <Link key={p.id} href={`/catalogue/${p.slug}`}
+                  className="group bg-white flex flex-col hover:bg-[#F7F7F7] transition-colors">
+                  <div className="w-full aspect-square bg-[#F7F7F7] flex items-center justify-center overflow-hidden">
+                    {p.image ? (
+                      <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <span className="text-xs text-[#111111]/20 uppercase tracking-wide">Product image</span>
+                    )}
+                  </div>
+                  <div className="p-5 flex flex-col gap-2">
+                    <h3 className="text-sm font-semibold text-[#111111] group-hover:underline">{p.name}</h3>
+                    <p className="text-xs text-[#111111]/40">{p.gsm} GSM{p.fits ? ` · ${p.fits[0]} fit` : ''}</p>
+                    <p className="text-sm font-bold mt-1">from &#8377;{p.price}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null
+      })()}
     </div>
   )
 }
