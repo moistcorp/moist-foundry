@@ -3,17 +3,17 @@ import { useState, useRef, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 const products = [
-  { name: 'Regular Fit Tee (200 GSM)', basePrice: 280, techniques: ['Screen Print', 'DTG', 'Embroidery'] },
-  { name: 'Boxy Fit Tee (200 GSM)', basePrice: 280, techniques: ['Screen Print', 'DTG', 'Embroidery'] },
-  { name: 'Regular Fit Tee (260 GSM)', basePrice: 340, techniques: ['Screen Print', 'DTG', 'Embroidery'] },
-  { name: 'Boxy Fit Tee (260 GSM)', basePrice: 340, techniques: ['Screen Print', 'DTG', 'Embroidery'] },
-  { name: 'Longsleeve Tee (260 GSM)', basePrice: 420, techniques: ['Screen Print', 'DTG', 'Embroidery'] },
-  { name: 'Regular Fit Sweatshirt (320 GSM)', basePrice: 580, techniques: ['Screen Print', 'Embroidery'] },
-  { name: 'Boxy Fit Sweatshirt (320 GSM)', basePrice: 580, techniques: ['Screen Print', 'Embroidery'] },
-  { name: 'Regular Fit Hoodie (320 GSM)', basePrice: 650, techniques: ['Screen Print', 'Embroidery', 'Heat Transfer'] },
-  { name: 'Boxy Fit Hoodie (320 GSM)', basePrice: 650, techniques: ['Screen Print', 'Embroidery', 'Heat Transfer'] },
-  { name: 'Shorts (220 GSM)', basePrice: 320, techniques: ['Screen Print', 'DTG', 'Embroidery'] },
-  { name: 'Canvas Tote Bag', basePrice: 180, techniques: ['Screen Print', 'DTG'] },
+  { name: 'Regular Fit Tee (200 GSM)', basePrice: 280, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
+  { name: 'Boxy Fit Tee (200 GSM)', basePrice: 280, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
+  { name: 'Regular Fit Tee (260 GSM)', basePrice: 340, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
+  { name: 'Boxy Fit Tee (260 GSM)', basePrice: 340, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
+  { name: 'Longsleeve Tee (260 GSM)', basePrice: 420, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
+  { name: 'Regular Fit Sweatshirt (320 GSM)', basePrice: 580, techniques: ['Screen Print', 'Embroidery'], mockColor: '#F8F8F8' },
+  { name: 'Boxy Fit Sweatshirt (320 GSM)', basePrice: 580, techniques: ['Screen Print', 'Embroidery'], mockColor: '#F8F8F8' },
+  { name: 'Regular Fit Hoodie (320 GSM)', basePrice: 650, techniques: ['Screen Print', 'Embroidery', 'Heat Transfer'], mockColor: '#F8F8F8' },
+  { name: 'Boxy Fit Hoodie (320 GSM)', basePrice: 650, techniques: ['Screen Print', 'Embroidery', 'Heat Transfer'], mockColor: '#F8F8F8' },
+  { name: 'Shorts (220 GSM)', basePrice: 320, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
+  { name: 'Canvas Tote Bag', basePrice: 180, techniques: ['Screen Print', 'DTG'], mockColor: '#D4C5A9' },
 ]
 
 const colors = [
@@ -30,6 +30,7 @@ const colors = [
 ]
 
 const placements = ['Front', 'Back', 'Left Sleeve', 'Right Sleeve']
+const neckLabels = ['No label', 'Woven label', 'Printed label', 'Heat transfer label']
 const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
 
 const techniqueInfo: Record<string, string> = {
@@ -40,43 +41,16 @@ const techniqueInfo: Record<string, string> = {
 }
 
 const productGroups = [
-  {
-    category: 'T-Shirts',
-    items: products.filter(p => p.name.includes('Tee') && !p.name.includes('Longsleeve')),
-  },
-  {
-    category: 'Longsleeve',
-    items: products.filter(p => p.name.includes('Longsleeve')),
-  },
-  {
-    category: 'Sweatshirts',
-    items: products.filter(p => p.name.includes('Sweatshirt')),
-  },
-  {
-    category: 'Hoodies',
-    items: products.filter(p => p.name.includes('Hoodie')),
-  },
-  {
-    category: 'Bottoms',
-    items: products.filter(p => p.name.includes('Shorts')),
-  },
-  {
-    category: 'Accessories',
-    items: products.filter(p => p.name.includes('Tote')),
-  },
+  { category: 'T-Shirts', items: products.filter(p => p.name.includes('Tee') && !p.name.includes('Longsleeve')) },
+  { category: 'Longsleeve', items: products.filter(p => p.name.includes('Longsleeve')) },
+  { category: 'Sweatshirts', items: products.filter(p => p.name.includes('Sweatshirt')) },
+  { category: 'Hoodies', items: products.filter(p => p.name.includes('Hoodie')) },
+  { category: 'Bottoms', items: products.filter(p => p.name.includes('Shorts')) },
+  { category: 'Accessories', items: products.filter(p => p.name.includes('Tote')) },
 ]
 
-const PANELS = ['color', 'artwork', 'placement', 'technique', 'sizes', 'details'] as const
-type Panel = typeof PANELS[number]
-
-const PANEL_LABELS: Record<Panel, string> = {
-  color: 'Color',
-  artwork: 'Artwork',
-  placement: 'Placement',
-  technique: 'Technique',
-  sizes: 'Sizes',
-  details: 'Details',
-}
+// Screens in the flow
+type Screen = 'picker' | 'configure' | 'summary' | 'shipping' | 'review' | 'success'
 
 function getDiscount(qty: number): number {
   if (qty >= 1000) return 0.22
@@ -86,59 +60,84 @@ function getDiscount(qty: number): number {
   return 0
 }
 
+function getDeliveryDate(): string {
+  const d = new Date()
+  d.setDate(d.getDate() + 35)
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+// Auto-distribute quantity across sizes (bell curve)
+function distributeQty(total: number): Record<string, number> {
+  const weights = { XS: 0.05, S: 0.15, M: 0.30, L: 0.30, XL: 0.15, XXL: 0.05 }
+  const raw: Record<string, number> = {}
+  let sum = 0
+  for (const [s, w] of Object.entries(weights)) {
+    raw[s] = Math.round(total * w)
+    sum += raw[s]
+  }
+  // Fix rounding — add/remove from M
+  const diff = total - sum
+  raw['M'] = (raw['M'] ?? 0) + diff
+  return raw
+}
+
 function GarmentSVG({
-  color,
-  placements: activePlacements,
-  frontPreview,
-  backPreview,
-  activeView,
+  color, placements: active, frontPreview, backPreview, activeView, productName,
 }: {
-  color: string
-  placements: string[]
-  frontPreview: string | null
-  backPreview: string | null
-  activeView: 'Front' | 'Back'
+  color: string; placements: string[]; frontPreview: string | null
+  backPreview: string | null; activeView: 'Front' | 'Back'; productName: string
 }) {
   const showFront = activeView === 'Front'
-  const garmentColor = colors.find(c => c.name === color)?.hex ?? '#F8F8F8'
-  const isDark = ['#1a1a1a', '#1B2A4A', '#2D5016', '#6B1E2E', '#6B6B2A'].includes(garmentColor)
-  const strokeColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'
-  const highlightColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+  const gc = colors.find(c => c.name === color)?.hex ?? '#F8F8F8'
+  const isDark = ['#1a1a1a', '#1B2A4A', '#2D5016', '#6B1E2E', '#6B6B2A'].includes(gc)
+  const sc = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'
+  const hl = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+  const isTote = productName.includes('Tote')
 
-  return (
-    <div className="relative w-full flex flex-col items-center gap-3">
-      <svg viewBox="0 0 300 320" width="100%" style={{ maxWidth: 320 }} xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M75 80 L40 110 L55 125 L65 115 L65 270 L235 270 L235 115 L245 125 L260 110 L225 80 C210 75 195 70 180 68 C175 85 162 95 150 95 C138 95 125 85 120 68 C105 70 90 75 75 80Z"
-          fill={garmentColor}
-          stroke={strokeColor}
-          strokeWidth="1.5"
-        />
-        <path d="M65 115 L40 110 L55 125 L65 165 Z" fill={garmentColor} stroke={strokeColor} strokeWidth="1.5" />
-        <path d="M235 115 L260 110 L245 125 L235 165 Z" fill={garmentColor} stroke={strokeColor} strokeWidth="1.5" />
-        {showFront && (
-          <path d="M120 68 C125 85 138 95 150 95 C162 95 175 85 180 68" fill="none" stroke={strokeColor} strokeWidth="2" />
+  if (isTote) {
+    return (
+      <svg viewBox="0 0 300 320" width="100%" style={{ maxWidth: 280 }} xmlns="http://www.w3.org/2000/svg">
+        <path d="M60 100 L80 60 L100 60 L100 80 C100 90 200 90 200 80 L200 60 L220 60 L240 100 L240 280 L60 280 Z" fill={gc} stroke={sc} strokeWidth="1.5" />
+        {frontPreview && (
+          <image href={frontPreview} x="105" y="140" width="90" height="90" preserveAspectRatio="xMidYMid meet" />
         )}
-        <path d="M100 90 L90 270 L110 270 L115 90Z" fill={highlightColor} />
-        {showFront && activePlacements.includes('Front') && !frontPreview && (
-          <rect x="120" y="130" width="60" height="60" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />
-        )}
-        {!showFront && activePlacements.includes('Back') && !backPreview && (
-          <rect x="120" y="130" width="60" height="60" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />
-        )}
-        {showFront && frontPreview && activePlacements.includes('Front') && (
-          <image href={frontPreview} x="122" y="132" width="56" height="56" preserveAspectRatio="xMidYMid meet" />
-        )}
-        {!showFront && backPreview && activePlacements.includes('Back') && (
-          <image href={backPreview} x="122" y="132" width="56" height="56" preserveAspectRatio="xMidYMid meet" />
-        )}
-        {activePlacements.includes('Left Sleeve') && (
-          <text x="48" y="145" fontSize="7" fill="#111111" opacity="0.5" textAnchor="middle">LOGO</text>
-        )}
-        {activePlacements.includes('Right Sleeve') && (
-          <text x="252" y="145" fontSize="7" fill="#111111" opacity="0.5" textAnchor="middle">LOGO</text>
+        {!frontPreview && active.includes('Front') && (
+          <rect x="105" y="140" width="90" height="90" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />
         )}
       </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 300 320" width="100%" style={{ maxWidth: 320 }} xmlns="http://www.w3.org/2000/svg">
+      <path d="M75 80 L40 110 L55 125 L65 115 L65 270 L235 270 L235 115 L245 125 L260 110 L225 80 C210 75 195 70 180 68 C175 85 162 95 150 95 C138 95 125 85 120 68 C105 70 90 75 75 80Z" fill={gc} stroke={sc} strokeWidth="1.5" />
+      <path d="M65 115 L40 110 L55 125 L65 165 Z" fill={gc} stroke={sc} strokeWidth="1.5" />
+      <path d="M235 115 L260 110 L245 125 L235 165 Z" fill={gc} stroke={sc} strokeWidth="1.5" />
+      {showFront && <path d="M120 68 C125 85 138 95 150 95 C162 95 175 85 180 68" fill="none" stroke={sc} strokeWidth="2" />}
+      <path d="M100 90 L90 270 L110 270 L115 90Z" fill={hl} />
+      {showFront && active.includes('Front') && !frontPreview && <rect x="120" y="130" width="60" height="60" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />}
+      {!showFront && active.includes('Back') && !backPreview && <rect x="120" y="130" width="60" height="60" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />}
+      {showFront && frontPreview && active.includes('Front') && <image href={frontPreview} x="122" y="132" width="56" height="56" preserveAspectRatio="xMidYMid meet" />}
+      {!showFront && backPreview && active.includes('Back') && <image href={backPreview} x="122" y="132" width="56" height="56" preserveAspectRatio="xMidYMid meet" />}
+      {active.includes('Left Sleeve') && <text x="48" y="145" fontSize="7" fill="#111111" opacity="0.5" textAnchor="middle">LOGO</text>}
+      {active.includes('Right Sleeve') && <text x="252" y="145" fontSize="7" fill="#111111" opacity="0.5" textAnchor="middle">LOGO</text>}
+    </svg>
+  )
+}
+
+function Accordion({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border border-[#E5E5E5]">
+      <button type="button" onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left">
+        <span className="text-sm font-semibold text-[#111111]">{title}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {open && <div className="border-t border-[#E5E5E5] px-5 py-5">{children}</div>}
     </div>
   )
 }
@@ -147,8 +146,7 @@ export default function ConfigureClient() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const [productSelected, setProductSelected] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+  const [screen, setScreen] = useState<Screen>('picker')
   const [activeView, setActiveView] = useState<'Front' | 'Back'>('Front')
   const [submitting, setSubmitting] = useState(false)
 
@@ -160,48 +158,49 @@ export default function ConfigureClient() {
   const [backPreview, setBackPreview] = useState<string | null>(null)
   const [activePlacements, setActivePlacements] = useState<string[]>(['Front'])
   const [technique, setTechnique] = useState('')
-  const [sizeQty, setSizeQty] = useState<Record<string, number>>({
-    XS: 0, S: 0, M: 0, L: 0, XL: 0, XXL: 0,
-  })
-  const [details, setDetails] = useState({
-    name: '', company: '', email: '', phone: '', notes: '',
-  })
-  const [panel, setPanel] = useState<Panel>('color')
+  const [neckLabel, setNeckLabel] = useState('No label')
+  const [totalQty, setTotalQty] = useState(50)
+  const [sizeQty, setSizeQty] = useState<Record<string, number>>({ XS: 0, S: 0, M: 0, L: 0, XL: 0, XXL: 0 })
+  const [details, setDetails] = useState({ name: '', company: '', email: '', phone: '', notes: '' })
+  const [shipping, setShipping] = useState({ address: '', city: '', state: '', pincode: '' })
 
   const frontRef = useRef<HTMLInputElement>(null)
   const backRef = useRef<HTMLInputElement>(null)
 
-  // Load from URL on mount
+  // Load from URL
   useEffect(() => {
     const p = searchParams.get('product')
     const c = searchParams.get('color')
     const t = searchParams.get('technique')
     const pl = searchParams.get('placements')
-    const s = searchParams.get('step')
-    if (p) { setProduct(p); setProductSelected(true) }
+    const s = searchParams.get('screen')
+    if (p) { setProduct(p); setScreen('configure') }
     if (c) setColor(c)
     if (t) setTechnique(t)
     if (pl) setActivePlacements(pl.split(','))
-    if (s && PANELS.includes(s as Panel)) setPanel(s as Panel)
+    if (s && ['configure', 'summary', 'shipping', 'review'].includes(s)) setScreen(s as Screen)
   }, [])
 
-  // Save to URL on change
+  // Save to URL
   useEffect(() => {
-    if (!productSelected) return
+    if (screen === 'picker' || screen === 'success') return
     const params = new URLSearchParams()
     if (product) params.set('product', product)
     if (color) params.set('color', color)
     if (technique) params.set('technique', technique)
     if (activePlacements.length) params.set('placements', activePlacements.join(','))
-    params.set('step', panel)
+    params.set('screen', screen)
     router.replace(`/configure?${params.toString()}`, { scroll: false })
-  }, [product, color, technique, activePlacements, panel, productSelected])
+  }, [product, color, technique, activePlacements, screen])
 
-  const totalQty = Object.values(sizeQty).reduce((a, b) => a + b, 0)
   const selectedProduct = products.find(p => p.name === product) ?? products[0]
   const discount = getDiscount(totalQty)
   const pricePerPiece = Math.round(selectedProduct.basePrice * (1 - discount))
-  const totalPrice = pricePerPiece * Math.max(totalQty, 50)
+  const subtotal = pricePerPiece * totalQty
+  const gst = Math.round(subtotal * 0.05)
+  const grandTotal = subtotal + gst
+  const deliveryDate = getDeliveryDate()
+  const actualSizeTotal = Object.values(sizeQty).reduce((a, b) => a + b, 0)
 
   function handleArtwork(file: File, side: 'front' | 'back') {
     const url = URL.createObjectURL(file)
@@ -210,66 +209,47 @@ export default function ConfigureClient() {
   }
 
   function togglePlacement(p: string) {
-    setActivePlacements(prev =>
-      prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]
-    )
+    setActivePlacements(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
   }
 
-  // Progress bar — how many panels are complete
-  function isPanelComplete(p: Panel): boolean {
-    if (p === 'color') return color !== ''
-    if (p === 'artwork') return frontArtwork !== null || backArtwork !== null
-    if (p === 'placement') return activePlacements.length > 0
-    if (p === 'technique') return technique !== ''
-    if (p === 'sizes') return totalQty >= 50
-    if (p === 'details') return details.name !== '' && details.email !== '' && details.company !== ''
-    return false
+  function canProceedToSummary() {
+    return color !== '' && activePlacements.length > 0 && technique !== '' && totalQty >= 50
   }
 
-  const completedCount = PANELS.filter(isPanelComplete).length
-  const progressPct = Math.round((completedCount / PANELS.length) * 100)
+  function canProceedToShipping() {
+    return actualSizeTotal === totalQty
+  }
+
+  function canProceedToReview() {
+    return shipping.address !== '' && shipping.city !== '' && shipping.pincode !== ''
+  }
 
   function canSubmit() {
-    return PANELS.every(isPanelComplete)
+    return details.name !== '' && details.email !== '' && details.company !== ''
   }
 
-  // ── PRODUCT SELECTION SCREEN ──────────────────────────────────
-  if (!productSelected) {
+  // ── PRODUCT PICKER ────────────────────────────────────────────
+  if (screen === 'picker') {
     return (
       <div className="max-w-5xl mx-auto px-6 py-20">
-        <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-4">Step 1 of 2</p>
+        <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-4">Step 1 of 5</p>
         <h1 className="text-4xl font-bold tracking-tight mb-2">What are you making?</h1>
-        <p className="text-[#111111]/50 text-sm mb-14">
-          Select a product to start configuring your order. MOQ 50 pieces.
-        </p>
-
+        <p className="text-[#111111]/50 text-sm mb-14">Select a product to begin. MOQ 50 pieces.</p>
         <div className="flex flex-col gap-10">
           {productGroups.map(group =>
             group.items.length > 0 ? (
               <div key={group.category}>
                 <div className="flex items-center gap-4 mb-4">
-                  <p className="text-xs font-medium uppercase tracking-widest text-[#111111]/40 shrink-0">
-                    {group.category}
-                  </p>
+                  <p className="text-xs font-medium uppercase tracking-widest text-[#111111]/40 shrink-0">{group.category}</p>
                   <div className="flex-1 h-px bg-[#E5E5E5]" />
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-2">
                   {group.items.map(p => (
-                    <button
-                      key={p.name}
-                      type="button"
-                      onClick={() => {
-                        setProduct(p.name)
-                        setTechnique('')
-                        setProductSelected(true)
-                        setPanel('color')
-                      }}
-                      className="p-5 border border-[#E5E5E5] text-left hover:border-[#111111] hover:bg-[#F7F7F7] transition-colors group"
-                    >
+                    <button key={p.name} type="button"
+                      onClick={() => { setProduct(p.name); setTechnique(''); setScreen('configure') }}
+                      className="p-5 border border-[#E5E5E5] text-left hover:border-[#111111] hover:bg-[#F7F7F7] transition-colors group">
                       <div className="flex justify-between items-start gap-4">
-                        <p className="text-sm font-semibold text-[#111111] group-hover:underline leading-snug">
-                          {p.name}
-                        </p>
+                        <p className="text-sm font-semibold text-[#111111] group-hover:underline leading-snug">{p.name}</p>
                         <p className="text-xs text-[#111111]/40 shrink-0">from &#8377;{p.basePrice}</p>
                       </div>
                       <p className="text-xs text-[#111111]/40 mt-2">{p.techniques.join(' · ')}</p>
@@ -284,8 +264,8 @@ export default function ConfigureClient() {
     )
   }
 
-  // ── SUCCESS SCREEN ────────────────────────────────────────────
-  if (submitted) {
+  // ── SUCCESS ───────────────────────────────────────────────────
+  if (screen === 'success') {
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-6">
         <div className="max-w-md text-center">
@@ -294,587 +274,601 @@ export default function ConfigureClient() {
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-[#111111] mb-3 tracking-tight">Request received</h1>
+          <h1 className="text-3xl font-bold text-[#111111] mb-3 tracking-tight">Slot reserved</h1>
           <p className="text-[#111111]/60 mb-2 text-sm">
-            Thanks {details.name.split(' ')[0]}. We&apos;ll review your configuration and send a detailed quote to
+            Thanks {details.name.split(' ')[0]}. Confirmation sent to
           </p>
-          <p className="font-medium text-[#111111] mb-8">{details.email}</p>
-          <p className="text-xs text-[#111111]/40 mb-8">Expected response within 24 hours</p>
-          
-            href="/"
-            className="inline-block bg-[#111111] text-white px-6 py-3 text-sm font-medium hover:bg-black transition-colors"
-          
+          <p className="font-medium text-[#111111] mb-4">{details.email}</p>
+          <p className="text-xs text-[#111111]/40 mb-2">Estimated delivery: <strong>{deliveryDate}</strong></p>
+          <p className="text-xs text-[#111111]/40 mb-8">Our team will send a proforma within 24 hours.</p>
+          <a href="/" className="inline-block bg-[#111111] text-white px-6 py-3 text-sm font-medium hover:bg-black transition-colors">
             Back to home
-          
+          </a>
         </div>
       </div>
     )
   }
 
-  // ── MAIN STUDIO ───────────────────────────────────────────────
-  return (
-    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-72px)]">
+  // ── CONFIGURE SCREEN ─────────────────────────────────────────
+  if (screen === 'configure') {
+    return (
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-72px)]">
 
-      {/* LEFT — Garment preview */}
-      <div className="lg:w-3/5 bg-[#F7F7F7] flex flex-col items-center justify-center p-8 lg:p-16 relative">
+        {/* LEFT — preview */}
+        <div className="lg:w-3/5 bg-[#F7F7F7] flex flex-col items-center justify-center p-8 lg:p-16 relative">
+          <button type="button" onClick={() => setScreen('picker')}
+            className="absolute top-6 left-6 text-xs text-[#111111]/40 hover:text-[#111111] transition-colors flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Change product
+          </button>
 
-        {/* Back to product selection */}
-        <button
-          type="button"
-          onClick={() => setProductSelected(false)}
-          className="absolute top-6 left-6 text-xs text-[#111111]/40 hover:text-[#111111] transition-colors flex items-center gap-1.5"
-        >
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 flex bg-white border border-[#E5E5E5] overflow-hidden">
+            {(['Front', 'Back'] as const).map(v => (
+              <button key={v} type="button" onClick={() => setActiveView(v)}
+                className={`px-5 py-2 text-xs font-medium transition-colors ${activeView === v ? 'bg-[#111111] text-white' : 'text-[#111111]/50 hover:text-[#111111]'}`}>
+                {v}
+              </button>
+            ))}
+          </div>
+
+          <div className="w-full max-w-xs mt-8">
+            <GarmentSVG color={color} placements={activePlacements} frontPreview={frontPreview}
+              backPreview={backPreview} activeView={activeView} productName={product} />
+          </div>
+
+          <div className="mt-4 text-center">
+            <p className="text-sm font-medium text-[#111111]">{product}</p>
+            <p className="text-xs text-[#111111]/40 mt-1">{color} colorway</p>
+          </div>
+
+          {/* Live pricing */}
+          {totalQty >= 50 && (
+            <div className="mt-6 bg-white border border-[#E5E5E5] px-6 py-4 w-full max-w-xs">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-[#111111]/40">Unit cost</span>
+                <span className="text-sm font-bold text-[#111111]">&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-[#111111]/40">Total ({totalQty} pcs)</span>
+                <span className="text-sm font-bold text-[#111111]">&#8377;{subtotal.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-[#E5E5E5] mt-2">
+                <span className="text-xs text-[#111111]/40">Est. delivery</span>
+                <span className="text-xs font-medium text-[#111111]">{deliveryDate}</span>
+              </div>
+              {discount > 0 && (
+                <p className="text-xs text-green-600 mt-1">{(discount * 100).toFixed(0)}% volume discount applied</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT — accordions */}
+        <div className="lg:w-2/5 bg-white flex flex-col border-l border-[#E5E5E5]">
+          <div className="border-b border-[#E5E5E5] px-6 py-4">
+            <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-1">Configuring</p>
+            <p className="text-sm font-semibold text-[#111111]">{product}</p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-3">
+
+            {/* Color accordion */}
+            <Accordion title={`Garment color${color ? ` — ${color}` : ''}`} defaultOpen={true}>
+              <div className="grid grid-cols-5 gap-3">
+                {colors.map(c => (
+                  <button key={c.name} type="button" onClick={() => setColor(c.name)} title={c.name}
+                    className="flex flex-col items-center gap-1.5">
+                    <div className={`w-9 h-9 rounded-full border-2 transition-all ${color === c.name ? 'border-[#111111] scale-110' : 'border-[#E5E5E5] hover:border-[#111111]/40'}`}
+                      style={{ backgroundColor: c.hex }} />
+                    <span className={`text-[10px] text-center leading-tight ${color === c.name ? 'text-[#111111] font-medium' : 'text-[#111111]/40'}`}>{c.name}</span>
+                  </button>
+                ))}
+              </div>
+            </Accordion>
+
+            {/* Artwork accordion */}
+            <Accordion title="Artwork upload">
+              <div className="flex flex-col gap-4">
+                <input ref={frontRef} type="file" accept=".png,.svg,.jpg,.jpeg" className="hidden"
+                  onChange={e => e.target.files?.[0] && handleArtwork(e.target.files[0], 'front')} />
+                <input ref={backRef} type="file" accept=".png,.svg,.jpg,.jpeg" className="hidden"
+                  onChange={e => e.target.files?.[0] && handleArtwork(e.target.files[0], 'back')} />
+
+                <div>
+                  <p className="text-xs text-[#111111]/50 mb-2 uppercase tracking-widest">Front artwork</p>
+                  {frontPreview ? (
+                    <div className="border border-[#E5E5E5] p-3 flex items-center gap-3">
+                      <img src={frontPreview} alt="Front" className="w-10 h-10 object-contain bg-[#F7F7F7]" />
+                      <p className="text-xs flex-1 truncate">{frontArtwork?.name}</p>
+                      <button type="button" onClick={() => { setFrontArtwork(null); setFrontPreview(null) }}
+                        className="text-xs text-[#111111]/40 hover:text-[#111111]">Remove</button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => frontRef.current?.click()}
+                      className="w-full border-2 border-dashed border-[#E5E5E5] py-6 text-xs text-[#111111]/40 hover:border-[#111111]/30 transition-colors">
+                      Click to upload front artwork
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <p className="text-xs text-[#111111]/50 mb-2 uppercase tracking-widest">Back artwork <span className="normal-case font-normal">(optional)</span></p>
+                  {backPreview ? (
+                    <div className="border border-[#E5E5E5] p-3 flex items-center gap-3">
+                      <img src={backPreview} alt="Back" className="w-10 h-10 object-contain bg-[#F7F7F7]" />
+                      <p className="text-xs flex-1 truncate">{backArtwork?.name}</p>
+                      <button type="button" onClick={() => { setBackArtwork(null); setBackPreview(null) }}
+                        className="text-xs text-[#111111]/40 hover:text-[#111111]">Remove</button>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => backRef.current?.click()}
+                      className="w-full border-2 border-dashed border-[#E5E5E5] py-6 text-xs text-[#111111]/40 hover:border-[#111111]/30 transition-colors">
+                      Click to upload back artwork
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-[#111111]/30">PNG, SVG, or JPG. Transparent background recommended.</p>
+              </div>
+            </Accordion>
+
+            {/* Placement + Technique accordion */}
+            <Accordion title="Artwork placement &amp; technique">
+              <div className="flex flex-col gap-5">
+                <div>
+                  <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-2">Print placement</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {placements.map(p => (
+                      <button key={p} type="button" onClick={() => togglePlacement(p)}
+                        className={`px-3 py-2.5 border text-xs text-left transition-colors flex items-center justify-between ${
+                          activePlacements.includes(p) ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'
+                        }`}>
+                        {p}
+                        {activePlacements.includes(p) && (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-2">Print technique</p>
+                  <div className="flex flex-col gap-1.5">
+                    {selectedProduct.techniques.map(t => (
+                      <button key={t} type="button" onClick={() => setTechnique(t)}
+                        className={`px-4 py-3 border text-left transition-colors ${technique === t ? 'border-[#111111] bg-[#111111]/5' : 'border-[#E5E5E5] hover:border-[#111111]/40'}`}>
+                        <p className="text-xs font-medium">{t}</p>
+                        <p className="text-xs text-[#111111]/40 mt-0.5">{techniqueInfo[t]}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Accordion>
+
+            {/* Neck label accordion */}
+            <Accordion title={`Neck label — ${neckLabel}`}>
+              <div className="grid grid-cols-2 gap-2">
+                {neckLabels.map(l => (
+                  <button key={l} type="button" onClick={() => setNeckLabel(l)}
+                    className={`px-3 py-2.5 border text-xs text-left transition-colors ${neckLabel === l ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'}`}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </Accordion>
+
+            {/* Quantity */}
+            <div className="border border-[#E5E5E5] p-5">
+              <p className="text-sm font-semibold mb-4">Quantity</p>
+              <div className="flex items-center gap-3 mb-3">
+                <button type="button"
+                  onClick={() => setTotalQty(q => Math.max(50, q - 10))}
+                  className="w-10 h-10 border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center">
+                  -
+                </button>
+                <input
+                  type="number"
+                  value={totalQty}
+                  min={50}
+                  onChange={e => {
+                    const val = parseInt(e.target.value) || 50
+                    setTotalQty(Math.max(50, val))
+                  }}
+                  className="flex-1 text-center text-sm font-bold border border-[#E5E5E5] py-2.5 focus:outline-none focus:border-[#111111]"
+                />
+                <button type="button"
+                  onClick={() => setTotalQty(q => q + 10)}
+                  className="w-10 h-10 border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center">
+                  +
+                </button>
+              </div>
+              <p className="text-xs text-[#111111]/40">Minimum 50 pieces. You can type any number directly.</p>
+            </div>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="border-t border-[#E5E5E5] px-6 py-5">
+            <button type="button"
+              disabled={!canProceedToSummary()}
+              onClick={() => {
+                // Auto-distribute sizes when moving to summary
+                setSizeQty(distributeQty(totalQty))
+                setScreen('summary')
+              }}
+              className={`w-full py-3.5 text-sm font-medium transition-colors ${
+                canProceedToSummary() ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
+              }`}>
+              {canProceedToSummary() ? 'Next: Order summary' : 'Complete all sections above'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── ORDER SUMMARY SCREEN ──────────────────────────────────────
+  if (screen === 'summary') {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <button type="button" onClick={() => setScreen('configure')}
+          className="text-xs text-[#111111]/40 hover:text-[#111111] flex items-center gap-1.5 mb-8">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Change product
+          Back to configuration
         </button>
 
-        {/* View toggle */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex bg-white border border-[#E5E5E5] overflow-hidden">
-          {(['Front', 'Back'] as const).map(v => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setActiveView(v)}
-              className={`px-5 py-2 text-xs font-medium transition-colors ${
-                activeView === v ? 'bg-[#111111] text-white' : 'text-[#111111]/50 hover:text-[#111111]'
-              }`}
-            >
-              {v}
-            </button>
-          ))}
-        </div>
+        <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-2">Step 2 of 5</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Order summary</h1>
+        <p className="text-[#111111]/50 text-sm mb-10">We have auto-distributed your quantity across sizes. Adjust as needed.</p>
 
-        {/* Garment */}
-        <div className="w-full max-w-xs mt-8">
-          <GarmentSVG
-            color={color}
-            placements={activePlacements}
-            frontPreview={frontPreview}
-            backPreview={backPreview}
-            activeView={activeView}
-          />
-        </div>
-
-        {/* Labels */}
-        <div className="mt-6 text-center">
-          <p className="text-sm font-medium text-[#111111]">{product}</p>
-          <p className="text-xs text-[#111111]/40 mt-1">{color} colorway</p>
-        </div>
-
-        {/* Live estimate */}
-        {totalQty >= 50 && (
-          <div className="mt-8 bg-white border border-[#E5E5E5] px-6 py-4 text-center">
-            <p className="text-xs text-[#111111]/40 mb-1">Estimated total ({totalQty} pcs)</p>
-            <p className="text-2xl font-bold text-[#111111]">&#8377;{totalPrice.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-[#111111]/40 mt-1">
-              &#8377;{pricePerPiece} per piece
-              {discount > 0 ? ` · ${(discount * 100).toFixed(0)}% volume discount` : ''}
-            </p>
-          </div>
-        )}
-        {totalQty > 0 && totalQty < 50 && (
-          <div className="mt-8 bg-[#111111]/5 border border-[#111111]/10 px-6 py-3 text-center">
-            <p className="text-xs text-[#111111]/60">{50 - totalQty} more pieces needed to meet MOQ</p>
-          </div>
-        )}
-      </div>
-
-      {/* RIGHT — Controls */}
-      <div className="lg:w-2/5 bg-white flex flex-col border-l border-[#E5E5E5]">
-
-        {/* Progress bar */}
-        <div className="border-b border-[#E5E5E5] px-6 pt-4 pb-3">
-          <div className="flex justify-between items-center mb-2">
-            <p className="text-xs text-[#111111]/40 uppercase tracking-widest">Progress</p>
-            <p className="text-xs font-medium text-[#111111]">{progressPct}%</p>
-          </div>
-          <div className="w-full h-1 bg-[#E5E5E5] rounded-full overflow-hidden">
-            <div
-              className="h-1 bg-[#111111] rounded-full transition-all duration-500"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <div className="flex justify-between mt-2">
-            {PANELS.map(p => (
-              <div key={p} className="flex flex-col items-center gap-1">
-                <div className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                  isPanelComplete(p) ? 'bg-[#111111]' : panel === p ? 'bg-[#111111]/40' : 'bg-[#E5E5E5]'
-                }`} />
-                <span className={`text-[10px] leading-none ${
-                  panel === p ? 'text-[#111111] font-medium' : 'text-[#111111]/30'
-                }`}>
-                  {PANEL_LABELS[p]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Selected product header */}
-        <div className="border-b border-[#E5E5E5] px-6 py-3">
-          <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-1">Configuring</p>
-          <p className="text-sm font-semibold text-[#111111]">{product}</p>
-        </div>
-
-        {/* Panel tabs */}
-        <div className="border-b border-[#E5E5E5] px-6 py-3">
-          <div className="flex flex-wrap gap-2">
-            {PANELS.map(p => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPanel(p)}
-                className={`px-3 py-1.5 text-xs border capitalize transition-colors relative ${
-                  panel === p
-                    ? 'bg-[#111111] text-white border-[#111111]'
-                    : 'border-[#E5E5E5] text-[#111111]/50 hover:border-[#111111] hover:text-[#111111]'
-                }`}
-              >
-                {PANEL_LABELS[p]}
-                {isPanelComplete(p) && panel !== p && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-[#111111] rounded-full" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Panel content */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-
-          {/* Color */}
-          {panel === 'color' && (
-            <div>
-              <p className="text-sm font-medium mb-4">Fabric color</p>
-              <div className="grid grid-cols-5 gap-3">
-                {colors.map(c => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    onClick={() => setColor(c.name)}
-                    title={c.name}
-                    className="flex flex-col items-center gap-1.5"
-                  >
-                    <div
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
-                        color === c.name ? 'border-[#111111] scale-110' : 'border-[#E5E5E5] hover:border-[#111111]/40'
-                      }`}
-                      style={{ backgroundColor: c.hex }}
-                    />
-                    <span className={`text-xs text-center leading-tight ${
-                      color === c.name ? 'text-[#111111] font-medium' : 'text-[#111111]/40'
-                    }`}>
-                      {c.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              {color && (
-                <div className="mt-6 p-3 bg-[#F7F7F7] border border-[#E5E5E5] text-xs text-[#111111]/60">
-                  Selected: <strong className="text-[#111111]">{color}</strong>
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Size distribution */}
+          <div>
+            <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-3">Size breakdown</p>
+            <div className="flex flex-col gap-2 mb-4">
+              {sizes.map(s => (
+                <div key={s} className="flex items-center justify-between border border-[#E5E5E5] px-4 py-3">
+                  <span className="text-sm font-medium w-8">{s}</span>
+                  <div className="flex items-center gap-3">
+                    <button type="button"
+                      onClick={() => setSizeQty(prev => ({ ...prev, [s]: Math.max(0, (prev[s] ?? 0) - 1) }))}
+                      className="w-7 h-7 border border-[#E5E5E5] hover:border-[#111111] transition-colors flex items-center justify-center text-base">-</button>
+                    <span className="w-8 text-center text-sm font-medium">{sizeQty[s]}</span>
+                    <button type="button"
+                      onClick={() => setSizeQty(prev => ({ ...prev, [s]: (prev[s] ?? 0) + 1 }))}
+                      className="w-7 h-7 border border-[#E5E5E5] hover:border-[#111111] transition-colors flex items-center justify-center text-base">+</button>
+                  </div>
                 </div>
-              )}
-              <button
-                type="button"
-                onClick={() => setPanel('artwork')}
-                className="mt-4 w-full border border-[#111111] text-[#111111] py-2.5 text-xs font-medium hover:bg-[#111111] hover:text-white transition-colors"
-              >
-                Next: Artwork
-              </button>
+              ))}
             </div>
-          )}
 
-          {/* Artwork */}
-          {panel === 'artwork' && (
-            <div className="flex flex-col gap-5">
-              <p className="text-sm font-medium">Upload artwork</p>
-              <p className="text-xs text-[#111111]/40 -mt-3">PNG, SVG, or JPG. Transparent background recommended.</p>
+            <div className={`p-3 text-xs font-medium border ${
+              actualSizeTotal === totalQty ? 'bg-green-50 text-green-700 border-green-200'
+              : actualSizeTotal > totalQty ? 'bg-red-50 text-red-600 border-red-200'
+              : 'bg-[#111111]/5 text-[#111111]/60 border-[#111111]/10'
+            }`}>
+              {actualSizeTotal === totalQty
+                ? `${actualSizeTotal} pieces — matches your order quantity`
+                : actualSizeTotal > totalQty
+                ? `${actualSizeTotal} pieces — ${actualSizeTotal - totalQty} over your order quantity`
+                : `${actualSizeTotal} pieces — ${totalQty - actualSizeTotal} short of your order quantity`}
+            </div>
+          </div>
 
-              {/* Front */}
-              <div>
-                <p className="text-xs font-medium text-[#111111]/50 mb-2 uppercase tracking-widest">Front</p>
-                <input
-                  ref={frontRef}
-                  type="file"
-                  accept=".png,.svg,.jpg,.jpeg"
-                  className="hidden"
-                  onChange={e => e.target.files?.[0] && handleArtwork(e.target.files[0], 'front')}
-                />
-                {frontPreview ? (
-                  <div className="border border-[#E5E5E5] p-3 flex items-center gap-3">
-                    <img src={frontPreview} alt="Front" className="w-12 h-12 object-contain bg-[#F7F7F7]" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">{frontArtwork?.name}</p>
-                      <p className="text-xs text-[#111111]/40">{((frontArtwork?.size ?? 0) / 1024).toFixed(0)} KB</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => { setFrontArtwork(null); setFrontPreview(null) }}
-                      className="text-xs text-[#111111]/40 hover:text-[#111111] shrink-0"
-                    >
-                      Remove
-                    </button>
+          {/* Order details */}
+          <div className="flex flex-col gap-4">
+            <div className="border border-[#E5E5E5] p-5">
+              <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-4">Configuration</p>
+              {[
+                { label: 'Product', value: product },
+                { label: 'Color', value: color },
+                { label: 'Technique', value: technique },
+                { label: 'Placement', value: activePlacements.join(', ') },
+                { label: 'Neck label', value: neckLabel },
+                { label: 'Quantity', value: `${totalQty} pcs` },
+              ].map(row => (
+                <div key={row.label} className="flex justify-between py-2 border-b border-[#F7F7F7] last:border-0 text-xs">
+                  <span className="text-[#111111]/50">{row.label}</span>
+                  <span className="font-medium text-right max-w-[60%]">{row.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-[#111111] p-5 text-white">
+              <p className="text-xs text-white/50 uppercase tracking-widest mb-3">Pricing</p>
+              <div className="flex flex-col gap-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-white/60">Unit cost</span>
+                  <span>&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Volume discount</span>
+                    <span>-{(discount * 100).toFixed(0)}%</span>
                   </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => frontRef.current?.click()}
-                    className="w-full border-2 border-dashed border-[#E5E5E5] py-8 flex flex-col items-center gap-2 hover:border-[#111111]/30 transition-colors"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="1.5" opacity="0.3">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                    </svg>
-                    <span className="text-xs text-[#111111]/40">Upload front artwork</span>
-                  </button>
                 )}
+                <div className="flex justify-between">
+                  <span className="text-white/60">Subtotal</span>
+                  <span>&#8377;{subtotal.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/60">GST (5%)</span>
+                  <span>&#8377;{gst.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between text-base font-bold border-t border-white/20 pt-2 mt-1">
+                  <span>Total</span>
+                  <span>&#8377;{grandTotal.toLocaleString('en-IN')}</span>
+                </div>
               </div>
-
-              {/* Back */}
-              <div>
-                <p className="text-xs font-medium text-[#111111]/50 mb-2 uppercase tracking-widest">
-                  Back <span className="normal-case text-[#111111]/30 font-normal">(optional)</span>
-                </p>
-                <input
-                  ref={backRef}
-                  type="file"
-                  accept=".png,.svg,.jpg,.jpeg"
-                  className="hidden"
-                  onChange={e => e.target.files?.[0] && handleArtwork(e.target.files[0], 'back')}
-                />
-                {backPreview ? (
-                  <div className="border border-[#E5E5E5] p-3 flex items-center gap-3">
-                    <img src={backPreview} alt="Back" className="w-12 h-12 object-contain bg-[#F7F7F7]" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate">{backArtwork?.name}</p>
-                      <p className="text-xs text-[#111111]/40">{((backArtwork?.size ?? 0) / 1024).toFixed(0)} KB</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => { setBackArtwork(null); setBackPreview(null) }}
-                      className="text-xs text-[#111111]/40 hover:text-[#111111] shrink-0"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => backRef.current?.click()}
-                    className="w-full border-2 border-dashed border-[#E5E5E5] py-8 flex flex-col items-center gap-2 hover:border-[#111111]/30 transition-colors"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111111" strokeWidth="1.5" opacity="0.3">
-                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                    </svg>
-                    <span className="text-xs text-[#111111]/40">Upload back artwork</span>
-                  </button>
-                )}
+              <div className="mt-4 pt-4 border-t border-white/20">
+                <div className="flex justify-between text-xs">
+                  <span className="text-white/50">Est. delivery</span>
+                  <span className="font-medium">{deliveryDate}</span>
+                </div>
               </div>
-
-              <button
-                type="button"
-                onClick={() => setPanel('placement')}
-                className="mt-2 w-full border border-[#111111] text-[#111111] py-2.5 text-xs font-medium hover:bg-[#111111] hover:text-white transition-colors"
-              >
-                Next: Placement
-              </button>
             </div>
-          )}
 
-          {/* Placement */}
-          {panel === 'placement' && (
-            <div>
-              <p className="text-sm font-medium mb-4">Print placement</p>
-              <div className="flex flex-col gap-2">
-                {placements.map(p => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => togglePlacement(p)}
-                    className={`p-4 border text-left text-sm transition-colors flex items-center justify-between ${
-                      activePlacements.includes(p)
-                        ? 'border-[#111111] bg-[#111111]/5 text-[#111111] font-medium'
-                        : 'border-[#E5E5E5] hover:border-[#111111]/40 text-[#111111]'
-                    }`}
-                  >
-                    {p}
-                    {activePlacements.includes(p) && (
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setPanel('technique')}
-                className="mt-4 w-full border border-[#111111] text-[#111111] py-2.5 text-xs font-medium hover:bg-[#111111] hover:text-white transition-colors"
-              >
-                Next: Technique
-              </button>
-            </div>
-          )}
-
-          {/* Technique */}
-          {panel === 'technique' && (
-            <div>
-              <p className="text-sm font-medium mb-4">Print technique</p>
-              <div className="flex flex-col gap-2">
-                {selectedProduct.techniques.map(t => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTechnique(t)}
-                    className={`p-4 border text-left transition-colors ${
-                      technique === t
-                        ? 'border-[#111111] bg-[#111111]/5'
-                        : 'border-[#E5E5E5] hover:border-[#111111]/40'
-                    }`}
-                  >
-                    <p className="text-sm font-medium">{t}</p>
-                    <p className="text-xs text-[#111111]/40 mt-0.5">{techniqueInfo[t]}</p>
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={() => setPanel('sizes')}
-                className="mt-4 w-full border border-[#111111] text-[#111111] py-2.5 text-xs font-medium hover:bg-[#111111] hover:text-white transition-colors"
-              >
-                Next: Sizes
-              </button>
-            </div>
-          )}
-
-          {/* Sizes */}
-          {panel === 'sizes' && (
-            <div>
-              <p className="text-sm font-medium mb-1">Size breakdown</p>
-              <p className="text-xs text-[#111111]/40 mb-4">Minimum 50 pieces total</p>
-              <div className="flex flex-col gap-2">
-                {sizes.map(s => (
-                  <div key={s} className="flex items-center justify-between border border-[#E5E5E5] px-4 py-3">
-                    <span className="text-sm font-medium w-8">{s}</span>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setSizeQty(prev => ({ ...prev, [s]: Math.max(0, (prev[s] ?? 0) - 1) }))}
-                        className="w-7 h-7 border border-[#E5E5E5] text-base hover:border-[#111111] transition-colors flex items-center justify-center"
-                      >
-                        -
-                      </button>
-                      <span className="w-6 text-center text-sm font-medium">{sizeQty[s]}</span>
-                      <button
-                        type="button"
-                        onClick={() => setSizeQty(prev => ({ ...prev, [s]: (prev[s] ?? 0) + 1 }))}
-                        className="w-7 h-7 border border-[#E5E5E5] text-base hover:border-[#111111] transition-colors flex items-center justify-center"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className={`mt-4 p-3 text-xs font-medium border ${
-                totalQty >= 50
-                  ? 'bg-green-50 text-green-700 border-green-200'
-                  : 'bg-[#111111]/5 text-[#111111]/60 border-[#111111]/10'
+            <button type="button"
+              disabled={!canProceedToShipping()}
+              onClick={() => setScreen('shipping')}
+              className={`w-full py-3.5 text-sm font-medium transition-colors ${
+                canProceedToShipping() ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
               }`}>
-                {totalQty >= 50
-                  ? `${totalQty} pieces — good to go`
-                  : totalQty === 0
-                  ? 'Add sizes to continue'
-                  : `${totalQty} pieces — need ${50 - totalQty} more`}
-              </div>
-              {totalQty >= 50 && (
-                <button
-                  type="button"
-                  onClick={() => setPanel('details')}
-                  className="mt-4 w-full border border-[#111111] text-[#111111] py-2.5 text-xs font-medium hover:bg-[#111111] hover:text-white transition-colors"
-                >
-                  Next: Your details
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Details */}
-          {panel === 'details' && (
-            <div className="flex flex-col gap-4">
-              <p className="text-sm font-medium mb-1">Your details</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#111111]/50">Full name *</label>
-                  <input
-                    type="text"
-                    value={details.name}
-                    onChange={e => setDetails({ ...details, name: e.target.value })}
-                    className="border border-[#E5E5E5] bg-white px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111]"
-                    placeholder="Rahul Sharma"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#111111]/50">Company *</label>
-                  <input
-                    type="text"
-                    value={details.company}
-                    onChange={e => setDetails({ ...details, company: e.target.value })}
-                    className="border border-[#E5E5E5] bg-white px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111]"
-                    placeholder="Your Brand"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#111111]/50">Email *</label>
-                  <input
-                    type="email"
-                    value={details.email}
-                    onChange={e => setDetails({ ...details, email: e.target.value })}
-                    className="border border-[#E5E5E5] bg-white px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111]"
-                    placeholder="you@company.com"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[#111111]/50">Phone</label>
-                  <input
-                    type="tel"
-                    value={details.phone}
-                    onChange={e => setDetails({ ...details, phone: e.target.value })}
-                    className="border border-[#E5E5E5] bg-white px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111]"
-                    placeholder="+91 98765 43210"
-                  />
-                </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-[#111111]/50">Additional notes</label>
-                <textarea
-                  value={details.notes}
-                  onChange={e => setDetails({ ...details, notes: e.target.value })}
-                  rows={3}
-                  className="border border-[#E5E5E5] bg-white px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111] resize-none"
-                  placeholder="Deadlines, special requirements..."
-                />
-              </div>
-            </div>
-          )}
+              Next: Shipping details
+            </button>
+          </div>
         </div>
+      </div>
+    )
+  }
 
-        {/* Bottom — summary + submit */}
-        <div className="border-t border-[#E5E5E5] px-6 py-5 flex flex-col gap-3">
-          {/* Mini summary */}
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#111111]/40">
-            <span>{product}</span>
-            {color && <span>&#183; {color}</span>}
-            {technique && <span>&#183; {technique}</span>}
-            {activePlacements.length > 0 && <span>&#183; {activePlacements.join(', ')}</span>}
-            {totalQty > 0 && <span>&#183; {totalQty} pcs</span>}
+  // ── SHIPPING SCREEN ───────────────────────────────────────────
+  if (screen === 'shipping') {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <button type="button" onClick={() => setScreen('summary')}
+          className="text-xs text-[#111111]/40 hover:text-[#111111] flex items-center gap-1.5 mb-8">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back to order summary
+        </button>
+
+        <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-2">Step 3 of 5</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Shipping details</h1>
+        <p className="text-[#111111]/50 text-sm mb-10">Where should we deliver your order?</p>
+
+        <div className="flex flex-col gap-4 max-w-lg">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-wide">Street address *</label>
+            <input type="text" value={shipping.address}
+              onChange={e => setShipping({ ...shipping, address: e.target.value })}
+              className="border border-[#E5E5E5] px-4 py-3 text-sm focus:outline-none focus:border-[#111111]"
+              placeholder="Building, street, area" />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-wide">City *</label>
+              <input type="text" value={shipping.city}
+                onChange={e => setShipping({ ...shipping, city: e.target.value })}
+                className="border border-[#E5E5E5] px-4 py-3 text-sm focus:outline-none focus:border-[#111111]"
+                placeholder="Delhi" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-wide">State</label>
+              <input type="text" value={shipping.state}
+                onChange={e => setShipping({ ...shipping, state: e.target.value })}
+                className="border border-[#E5E5E5] px-4 py-3 text-sm focus:outline-none focus:border-[#111111]"
+                placeholder="Delhi" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-wide">Pincode *</label>
+              <input type="text" value={shipping.pincode}
+                onChange={e => setShipping({ ...shipping, pincode: e.target.value })}
+                className="border border-[#E5E5E5] px-4 py-3 text-sm focus:outline-none focus:border-[#111111]"
+                placeholder="110001" />
+            </div>
           </div>
 
-          {canSubmit() && (
-            <div className="bg-[#F7F7F7] border border-[#E5E5E5] p-3 text-xs text-[#111111]/60 leading-relaxed">
-              A <strong className="text-[#111111]">&#8377;499 refundable reservation fee</strong> is collected to confirm your slot. Balance invoiced via net banking.
-            </div>
-          )}
-
-          <button
-            type="button"
-            disabled={!canSubmit() || submitting}
-            onClick={async () => {
-              if (!canSubmit() || submitting) return
-              setSubmitting(true)
-              try {
-                await fetch('/api/send-confirmation', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    name: details.name,
-                    email: details.email,
-                    type: 'configure',
-                    orderDetails: {
-                      product,
-                      color,
-                      technique,
-                      placements: activePlacements.join(', '),
-                      totalQty,
-                      sizeBreakdown: sizes
-                        .filter(s => sizeQty[s] > 0)
-                        .map(s => `${s}: ${sizeQty[s]}`)
-                        .join(', '),
-                      estimatedTotal: `Rs.${(Math.round(
-                        selectedProduct.basePrice * (1 - getDiscount(totalQty)) * totalQty
-                      )).toLocaleString('en-IN')} (ex. GST)`,
-                    },
-                  }),
-                })
-
-                const txnid = 'MF' + Date.now()
-                const amount = '499.00'
-                const productinfo = `Reservation - ${product} x${totalQty} pcs`
-
-                const res = await fetch('/api/payu/hash', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    txnid,
-                    amount,
-                    productinfo,
-                    firstname: details.name.split(' ')[0],
-                    email: details.email,
-                  }),
-                })
-                const { hash, key } = await res.json()
-
-                const payuForm = document.createElement('form')
-                payuForm.method = 'POST'
-                payuForm.action = process.env.NEXT_PUBLIC_PAYU_BASE_URL ?? 'https://test.payu.in/_payment'
-
-                const fields: Record<string, string> = {
-                  key,
-                  txnid,
-                  amount,
-                  productinfo,
-                  firstname: details.name.split(' ')[0],
-                  lastname: details.name.split(' ').slice(1).join(' '),
-                  email: details.email,
-                  phone: details.phone || '9999999999',
-                  surl: `${window.location.origin}/payment/success`,
-                  furl: `${window.location.origin}/payment/failure`,
-                  hash,
-                }
-
-                Object.entries(fields).forEach(([k, v]) => {
-                  const input = document.createElement('input')
-                  input.type = 'hidden'
-                  input.name = k
-                  input.value = v
-                  payuForm.appendChild(input)
-                })
-
-                document.body.appendChild(payuForm)
-                payuForm.submit()
-              } catch (err) {
-                console.error('Submit error:', err)
-                setSubmitting(false)
-              }
-            }}
-            className={`w-full py-3.5 text-sm font-medium transition-colors ${
-              canSubmit() && !submitting
-                ? 'bg-[#111111] text-white hover:bg-black'
-                : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
-            }`}
-          >
-            {submitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-[#111111]/20 border-t-[#111111]/60 rounded-full animate-spin" />
-                Redirecting to payment...
-              </span>
-            ) : canSubmit() ? 'Reserve slot - Rs.499' : 'Complete all sections to continue'}
+          <button type="button"
+            disabled={!canProceedToReview()}
+            onClick={() => setScreen('review')}
+            className={`w-full py-3.5 text-sm font-medium transition-colors mt-4 ${
+              canProceedToReview() ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
+            }`}>
+            Next: Review &amp; pay
           </button>
         </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  // ── REVIEW SCREEN ─────────────────────────────────────────────
+  if (screen === 'review') {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <button type="button" onClick={() => setScreen('shipping')}
+          className="text-xs text-[#111111]/40 hover:text-[#111111] flex items-center gap-1.5 mb-8">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back to shipping
+        </button>
+
+        <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-2">Step 4 of 5</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Review your order</h1>
+        <p className="text-[#111111]/50 text-sm mb-10">Fill in your contact details and confirm everything looks right.</p>
+
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Contact details */}
+          <div className="flex flex-col gap-4">
+            <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest">Your details</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-[#111111]/50">Full name *</label>
+                <input type="text" value={details.name}
+                  onChange={e => setDetails({ ...details, name: e.target.value })}
+                  className="border border-[#E5E5E5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111]"
+                  placeholder="Rahul Sharma" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-[#111111]/50">Company *</label>
+                <input type="text" value={details.company}
+                  onChange={e => setDetails({ ...details, company: e.target.value })}
+                  className="border border-[#E5E5E5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111]"
+                  placeholder="Your Brand" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-[#111111]/50">Email *</label>
+                <input type="email" value={details.email}
+                  onChange={e => setDetails({ ...details, email: e.target.value })}
+                  className="border border-[#E5E5E5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111]"
+                  placeholder="you@company.com" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-[#111111]/50">Phone</label>
+                <input type="tel" value={details.phone}
+                  onChange={e => setDetails({ ...details, phone: e.target.value })}
+                  className="border border-[#E5E5E5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111]"
+                  placeholder="+91 98765 43210" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-[#111111]/50">Notes</label>
+              <textarea value={details.notes}
+                onChange={e => setDetails({ ...details, notes: e.target.value })}
+                rows={3} placeholder="Any special requirements..."
+                className="border border-[#E5E5E5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111] resize-none" />
+            </div>
+          </div>
+
+          {/* Full order summary */}
+          <div className="flex flex-col gap-4">
+            <div className="border border-[#E5E5E5] p-5 text-xs">
+              <p className="font-medium text-[#111111]/40 uppercase tracking-widest mb-4">Order details</p>
+              {[
+                { label: 'Product', value: product },
+                { label: 'Color', value: color },
+                { label: 'Technique', value: technique },
+                { label: 'Placement', value: activePlacements.join(', ') },
+                { label: 'Neck label', value: neckLabel },
+                { label: 'Quantity', value: `${totalQty} pcs` },
+                { label: 'Ship to', value: `${shipping.address}, ${shipping.city} - ${shipping.pincode}` },
+                { label: 'Est. delivery', value: deliveryDate },
+              ].map(row => (
+                <div key={row.label} className="flex justify-between py-2 border-b border-[#F7F7F7] last:border-0">
+                  <span className="text-[#111111]/50">{row.label}</span>
+                  <span className="font-medium text-right max-w-[55%]">{row.value}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-[#111111] p-5 text-white text-sm">
+              <div className="flex justify-between mb-2">
+                <span className="text-white/60">Subtotal</span>
+                <span>&#8377;{subtotal.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-white/60">GST (5%)</span>
+                <span>&#8377;{gst.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between font-bold text-base border-t border-white/20 pt-3 mt-2">
+                <span>Total</span>
+                <span>&#8377;{grandTotal.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+
+            <div className="bg-[#F7F7F7] border border-[#E5E5E5] p-4 text-xs text-[#111111]/60 leading-relaxed">
+              A <strong className="text-[#111111]">&#8377;499 reservation fee</strong> is charged now to confirm your slot. The balance (&#8377;{(grandTotal - 499).toLocaleString('en-IN')}) is invoiced separately via net banking and adjusted before production begins.
+            </div>
+
+            <button
+              type="button"
+              disabled={!canSubmit() || submitting}
+              onClick={async () => {
+                if (!canSubmit() || submitting) return
+                setSubmitting(true)
+                try {
+                  await fetch('/api/send-confirmation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      name: details.name,
+                      email: details.email,
+                      type: 'configure',
+                      orderDetails: {
+                        product, color, technique,
+                        placements: activePlacements.join(', '),
+                        totalQty,
+                        sizeBreakdown: sizes.filter(s => sizeQty[s] > 0).map(s => `${s}: ${sizeQty[s]}`).join(', '),
+                        estimatedTotal: `Rs.${grandTotal.toLocaleString('en-IN')} (incl. GST)`,
+                      },
+                    }),
+                  })
+
+                  const txnid = 'MF' + Date.now()
+                  const amount = '499.00'
+                  const productinfo = `Reservation - ${product} x${totalQty} pcs`
+                  const res = await fetch('/api/payu/hash', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ txnid, amount, productinfo, firstname: details.name.split(' ')[0], email: details.email }),
+                  })
+                  const { hash, key } = await res.json()
+
+                  const payuForm = document.createElement('form')
+                  payuForm.method = 'POST'
+                  payuForm.action = process.env.NEXT_PUBLIC_PAYU_BASE_URL ?? 'https://secure.payu.in/_payment'
+
+                  const fields: Record<string, string> = {
+                    key, txnid, amount, productinfo,
+                    firstname: details.name.split(' ')[0],
+                    lastname: details.name.split(' ').slice(1).join(' '),
+                    email: details.email,
+                    phone: details.phone || '9999999999',
+                    surl: `${window.location.origin}/payment/success`,
+                    furl: `${window.location.origin}/payment/failure`,
+                    hash,
+                  }
+
+                  Object.entries(fields).forEach(([k, v]) => {
+                    const input = document.createElement('input')
+                    input.type = 'hidden'
+                    input.name = k
+                    input.value = v
+                    payuForm.appendChild(input)
+                  })
+                  document.body.appendChild(payuForm)
+                  payuForm.submit()
+                } catch (err) {
+                  console.error('Submit error:', err)
+                  setSubmitting(false)
+                }
+              }}
+              className={`w-full py-4 text-sm font-medium transition-colors ${
+                canSubmit() && !submitting ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
+              }`}
+            >
+              {submitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-[#111111]/20 border-t-[#111111]/60 rounded-full animate-spin" />
+                  Redirecting to payment...
+                </span>
+              ) : canSubmit() ? 'Confirm & pay Rs.499' : 'Fill in your details to continue'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return null
 }
