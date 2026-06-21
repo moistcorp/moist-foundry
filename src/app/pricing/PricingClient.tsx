@@ -1,46 +1,27 @@
 'use client'
 import Link from 'next/link'
 import { useState } from 'react'
+import {
+  PRODUCT_PRICES,
+  VOLUME_TIERS,
+  RUSH_TIERS,
+  getDiscount,
+  getRushCharge,
+  calcOrder,
+  DELIVERY_DAYS,
+  RUSH_DELIVERY_DAYS,
+} from '@/lib/pricing'
 
-const products = [
-  { name: 'Regular Fit Tee (200 GSM)', base: 280, gst: 5 },
-  { name: 'Boxy Fit Tee (200 GSM)', base: 280, gst: 5 },
-  { name: 'Regular Fit Tee (260 GSM)', base: 340, gst: 5 },
-  { name: 'Boxy Fit Tee (260 GSM)', base: 340, gst: 5 },
-  { name: 'Longsleeve Tee (260 GSM)', base: 420, gst: 5 },
-  { name: 'Regular Fit Sweatshirt (320 GSM)', base: 580, gst: 5 },
-  { name: 'Boxy Fit Sweatshirt (320 GSM)', base: 580, gst: 5 },
-  { name: 'Regular Fit Hoodie (320 GSM)', base: 650, gst: 5 },
-  { name: 'Boxy Fit Hoodie (320 GSM)', base: 650, gst: 5 },
-  { name: 'Shorts (220 GSM)', base: 320, gst: 5 },
-  { name: 'Canvas Tote Bag', base: 180, gst: 5 },
-]
-
-const tiers = [
-  { min: 50, max: 99, discount: 0 },
-  { min: 100, max: 249, discount: 0.07 },
-  { min: 250, max: 499, discount: 0.12 },
-  { min: 500, max: 999, discount: 0.17 },
-  { min: 1000, max: 1000, discount: 0.22 },
-]
-
-function getDiscount(qty: number): number {
-  for (const tier of tiers) {
-    if (qty >= tier.min && qty <= tier.max) return tier.discount
-  }
-  return 0.22
-}
+const productList = Object.entries(PRODUCT_PRICES).map(([name, base]) => ({ name, base }))
 
 export default function PricingClient() {
   const [qty, setQty] = useState<number>(50)
-  const [selected, setSelected] = useState<string>('Regular Fit Tee (200 GSM)')
+  const [selected, setSelected] = useState<string>(productList[0].name)
+  const [rush, setRush] = useState(false)
 
-  const product = products.find(p => p.name === selected) ?? products[0]
-  const discount = getDiscount(qty)
-  const pricePerPiece = Math.round(product.base * (1 - discount))
-  const totalEx = pricePerPiece * qty
-  const gstAmount = Math.round(totalEx * product.gst / 100)
-  const totalInc = totalEx + gstAmount
+  const { discount, discountedBase, rushCharge, pricePerPiece, subtotal, gst, total } = calcOrder(selected, qty, rush)
+  const deliveryDays = rush ? RUSH_DELIVERY_DAYS : DELIVERY_DAYS
+  const rushChargeTotal = rushCharge * qty
 
   return (
     <>
@@ -50,115 +31,232 @@ export default function PricingClient() {
           Simple, transparent pricing
         </h1>
         <p className="text-[#111111]/50 max-w-lg text-lg">
-          No hidden fees. Prices include printing. GST extra. Volume discounts applied automatically.
+          All prices include fabric, stitching, single-color screen print, neck label, and our margin. GST at 5% added at invoice. Shipping quoted separately.
         </p>
       </section>
 
       <section className="max-w-7xl mx-auto px-6 pb-24">
         <div className="grid md:grid-cols-2 gap-12">
+
+          {/* Controls */}
           <div className="flex flex-col gap-8">
+
+            {/* Product */}
             <div>
-              <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest block mb-3">Select product</label>
-              <div className="grid grid-cols-2 gap-2">
-                {products.map(p => (
-                  <button key={p.name} type="button" onClick={() => setSelected(p.name)}
-                    className={`px-4 py-2.5 text-xs text-left border transition-colors ${
+              <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest block mb-3">
+                Select product
+              </label>
+              <div className="grid grid-cols-2 gap-1.5">
+                {productList.map(p => (
+                  <button
+                    key={p.name}
+                    type="button"
+                    onClick={() => setSelected(p.name)}
+                    className={`px-3 py-2.5 text-xs text-left border transition-colors ${
                       selected === p.name
                         ? 'bg-[#111111] text-white border-[#111111]'
                         : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111] hover:text-[#111111]'
-                    }`}>
+                    }`}
+                  >
                     {p.name}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Quantity */}
             <div>
               <div className="flex justify-between items-center mb-3">
-                <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest">Quantity</label>
+                <label className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest">
+                  Quantity
+                </label>
                 <span className="text-sm font-bold text-[#111111]">{qty} pcs</span>
               </div>
-              <input type="range" min={50} max={1000} step={50} value={qty}
-                onChange={(e) => setQty(Number(e.target.value))}
-                onInput={(e) => setQty(Number((e.target as HTMLInputElement).value))}
-                className="w-full accent-[#111111]" />
+              <input
+                type="range" min={50} max={1000} step={50} value={qty}
+                onChange={e => setQty(Number(e.target.value))}
+                onInput={e => setQty(Number((e.target as HTMLInputElement).value))}
+                className="w-full accent-[#111111]"
+              />
               <div className="flex justify-between text-xs text-[#111111]/30 mt-1">
                 <span>50 pcs</span><span>1000 pcs</span>
               </div>
             </div>
 
+            {/* Rush order toggle */}
+            <div className="border border-[#E5E5E5] p-4">
+              <div className="flex items-center justify-between mb-1">
+                <div>
+                  <p className="text-sm font-semibold text-[#111111]">Rush order</p>
+                  <p className="text-xs text-[#111111]/50 mt-0.5">
+                    Delivery in {RUSH_DELIVERY_DAYS} days instead of {DELIVERY_DAYS}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRush(!rush)}
+                  className={`relative w-11 h-6 rounded-full transition-colors ${rush ? 'bg-[#111111]' : 'bg-[#E5E5E5]'}`}
+                >
+                  <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${rush ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+              {rush && (
+                <p className="text-xs text-[#111111]/50 mt-2 pt-2 border-t border-[#E5E5E5]">
+                  Rush premium: +&#8377;{getRushCharge(qty)}/piece (&#8377;{rushChargeTotal.toLocaleString('en-IN')} total)
+                </p>
+              )}
+            </div>
+
+            {/* Volume tiers */}
             <div>
-              <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-3">Volume discounts</p>
-              <div className="flex flex-col gap-1 border border-[#E5E5E5]">
-                {tiers.map(t => (
-                  <div key={t.min} className={`flex justify-between text-xs px-4 py-3 transition-colors ${
-                    getDiscount(qty) === t.discount ? 'bg-[#111111] text-white' : 'text-[#111111]/40'
-                  }`}>
-                    <span>{t.min}{t.min === 1000 ? '+' : `-${t.max}`} pcs</span>
-                    <span>{t.discount === 0 ? 'Base price' : `${(t.discount * 100).toFixed(0)}% off`}</span>
+              <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-3">
+                Volume discounts
+              </p>
+              <div className="flex flex-col border border-[#E5E5E5] overflow-hidden">
+                {VOLUME_TIERS.map(t => (
+                  <div
+                    key={t.min}
+                    className={`flex justify-between text-xs px-4 py-3 border-b border-[#E5E5E5] last:border-0 transition-colors ${
+                      getDiscount(qty) === t.discount ? 'bg-[#111111] text-white' : 'text-[#111111]/40'
+                    }`}
+                  >
+                    <span>{t.min}{t.max === Infinity ? '+' : `–${t.max}`} pcs</span>
+                    <span>{t.label}</span>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Rush tiers — shown when rush is on */}
+            {rush && (
+              <div>
+                <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-3">
+                  Rush premiums (per piece)
+                </p>
+                <div className="flex flex-col border border-[#E5E5E5] overflow-hidden">
+                  {RUSH_TIERS.map(t => (
+                    <div
+                      key={t.min}
+                      className={`flex justify-between text-xs px-4 py-3 border-b border-[#E5E5E5] last:border-0 transition-colors ${
+                        getRushCharge(qty) === t.charge && qty >= t.min && qty <= t.max
+                          ? 'bg-[#111111] text-white'
+                          : 'text-[#111111]/40'
+                      }`}
+                    >
+                      <span>{t.min}{t.max === Infinity ? '+' : `–${t.max}`} pcs</span>
+                      <span>+&#8377;{t.charge}/pc</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* Output */}
           <div className="flex flex-col gap-4">
             <div className="bg-[#111111] p-8 text-white">
-              <p className="text-xs text-white/40 mb-1 uppercase tracking-widest">Estimate for</p>
-              <p className="text-base font-semibold mb-6">{selected} &times; {qty} pcs</p>
+              <p className="text-xs text-white/50 mb-1 uppercase tracking-widest">Estimate for</p>
+              <p className="text-base font-semibold mb-1">{selected}</p>
+              <p className="text-xs text-white/40 mb-6">{qty} pieces &middot; {deliveryDays}-day delivery</p>
+
               <div className="flex flex-col gap-3 border-t border-white/10 pt-6">
                 <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Price per piece</span>
-                  <span>&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
+                  <span className="text-white/60">Base price/piece</span>
+                  <span>&#8377;{(PRODUCT_PRICES[selected] ?? 0).toLocaleString('en-IN')}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-white/50">Volume discount</span>
-                    <span>-{(discount * 100).toFixed(0)}%</span>
+                    <span className="text-white/60">Volume discount ({(discount * 100).toFixed(0)}%)</span>
+                    <span className="text-green-400">
+                      -&#8377;{(PRODUCT_PRICES[selected] - discountedBase).toLocaleString('en-IN')}/pc
+                    </span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-white/50">Subtotal (ex. GST)</span>
-                  <span>&#8377;{totalEx.toLocaleString('en-IN')}</span>
+                {rush && rushCharge > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/60">Rush premium</span>
+                    <span>+&#8377;{rushCharge}/pc</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm font-medium border-t border-white/10 pt-3 mt-1">
+                  <span className="text-white/80">Price per piece</span>
+                  <span>&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-white/50">GST ({product.gst}%)</span>
-                  <span>&#8377;{gstAmount.toLocaleString('en-IN')}</span>
+                  <span className="text-white/60">Subtotal ({qty} pcs)</span>
+                  <span>&#8377;{subtotal.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between text-base font-bold border-t border-white/10 pt-4 mt-1">
-                  <span>Total estimate</span>
-                  <span>&#8377;{totalInc.toLocaleString('en-IN')}</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/60">GST (5%) — paid by client</span>
+                  <span>&#8377;{gst.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between text-xl font-bold border-t border-white/10 pt-4 mt-1">
+                  <span>Total (incl. GST)</span>
+                  <span>&#8377;{total.toLocaleString('en-IN')}</span>
                 </div>
               </div>
-              <p className="text-xs text-white/20 mt-6 leading-relaxed">
-                Estimates include standard single-colour print. Final quote may vary.
+
+              <div className="mt-5 pt-5 border-t border-white/10 flex flex-col gap-1.5">
+                <div className="flex justify-between text-xs">
+                  <span className="text-white/40">Delivery timeline</span>
+                  <span className="text-white/70">{deliveryDays} days from order confirmation</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-white/40">Shipping</span>
+                  <span className="text-white/70">Quoted separately by email</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-white/20 mt-5 leading-relaxed">
+                Includes single-color screen print. Multi-color, embroidery, or DTG quoted separately.
               </p>
             </div>
-            <Link href="/contact" className="bg-[#111111] text-white text-sm font-medium px-6 py-4 text-center hover:bg-black transition">
+
+            <Link
+              href="/contact"
+              className="bg-[#111111] text-white text-sm font-medium px-6 py-4 text-center hover:bg-black transition"
+            >
               Get a firm quote
             </Link>
-            <Link href="/configure" className="border border-[#111111] text-[#111111] text-sm font-medium px-6 py-4 text-center hover:bg-[#111111] hover:text-white transition">
+            <Link
+              href="/configure"
+              className="border border-[#111111] text-[#111111] text-sm font-medium px-6 py-4 text-center hover:bg-[#111111] hover:text-white transition"
+            >
               Start designing instead
             </Link>
           </div>
         </div>
       </section>
 
+      {/* What's included */}
       <section className="bg-[#F7F7F7] border-t border-[#E5E5E5] py-16">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-2xl font-bold mb-8 tracking-tight">What&apos;s included in every order</h2>
-          <div className="grid md:grid-cols-4 gap-8">
+          <h2 className="text-2xl font-bold mb-2 tracking-tight">What&apos;s included in every order</h2>
+          <p className="text-[#111111]/50 text-sm mb-8">All prices already include the following. No surprises at invoice.</p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: 'Sampling', desc: 'Pre-production sample before bulk run' },
-              { title: 'QA checks', desc: 'Every piece inspected before packing' },
-              { title: 'Order tracking', desc: 'Full visibility from production to delivery' },
-              { title: 'Print setup', desc: 'Screen setup and artwork prep included' },
+              { title: 'Fabric & stitching', desc: 'Premium blanks cut and sewn at our Greater Noida facility' },
+              { title: 'Single-color print', desc: 'Screen print setup and execution included in base price' },
+              { title: 'Neck label', desc: 'Basic neck label included. Woven/custom labels quoted separately' },
+              { title: 'QA & packing', desc: 'Every piece inspected and individually packed before dispatch' },
             ].map(i => (
-              <div key={i.title}>
+              <div key={i.title} className="border border-[#E5E5E5] bg-white p-5">
                 <p className="font-semibold text-sm mb-1">{i.title}</p>
                 <p className="text-xs text-[#111111]/50 leading-relaxed">{i.desc}</p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-6 border border-[#E5E5E5] bg-white p-5">
+            <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-3">Not included — quoted separately</p>
+            <div className="grid md:grid-cols-3 gap-4 text-xs text-[#111111]/60">
+              <p>Multi-color screen print (additional per color)</p>
+              <p>DTG printing (quoted per design)</p>
+              <p>Embroidery (quoted per stitch count)</p>
+              <p>Custom woven / printed neck labels</p>
+              <p>Shipping (paid by client, quoted by email)</p>
+              <p>GST 5% (added at invoice stage)</p>
+            </div>
           </div>
         </div>
       </section>

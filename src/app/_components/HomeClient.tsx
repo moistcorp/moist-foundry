@@ -1,6 +1,14 @@
 'use client'
 import Link from 'next/link'
 import { useState } from 'react'
+import {
+  PRODUCT_PRICES,
+  getDiscount,
+  calcOrder,
+  DELIVERY_DAYS,
+} from '@/lib/pricing'
+
+const estimatorProducts = Object.entries(PRODUCT_PRICES).map(([name, base]) => ({ name, base }))
 
 const industries = [
   { name: 'Hotels & Restaurants', desc: 'Staff uniforms, guest amenities, branded F&B merchandise.', image: null },
@@ -11,42 +19,16 @@ const industries = [
   { name: 'Companies & Startups', desc: 'Employee swag, brand merchandise, conference and event kits.', image: null },
 ]
 
-const estimatorProducts = [
-  { name: 'Regular Fit Tee (200 GSM)', base: 280 },
-  { name: 'Boxy Fit Tee (200 GSM)', base: 280 },
-  { name: 'Regular Fit Tee (260 GSM)', base: 340 },
-  { name: 'Boxy Fit Tee (260 GSM)', base: 340 },
-  { name: 'Longsleeve Tee (260 GSM)', base: 420 },
-  { name: 'Regular Fit Sweatshirt (320 GSM)', base: 580 },
-  { name: 'Boxy Fit Sweatshirt (320 GSM)', base: 580 },
-  { name: 'Regular Fit Hoodie (320 GSM)', base: 650 },
-  { name: 'Boxy Fit Hoodie (320 GSM)', base: 650 },
-  { name: 'Shorts (220 GSM)', base: 320 },
-  { name: 'Canvas Tote Bag', base: 180 },
-]
-
-function getDiscount(qty: number) {
-  if (qty >= 1000) return 0.22
-  if (qty >= 500) return 0.17
-  if (qty >= 250) return 0.12
-  if (qty >= 100) return 0.07
-  return 0
-}
-
 export default function HomeClient() {
   const [qty, setQty] = useState(50)
   const [selected, setSelected] = useState(estimatorProducts[0].name)
 
-  const product = estimatorProducts.find(p => p.name === selected) ?? estimatorProducts[0]
-  const discount = getDiscount(qty)
-  const pricePerPiece = Math.round(product.base * (1 - discount))
-  const total = pricePerPiece * qty
+  const { discount, pricePerPiece, subtotal, gst, total } = calcOrder(selected, qty)
 
   return (
     <>
-      {/* HERO — split screen like Assembly */}
+      {/* HERO */}
       <section className="grid lg:grid-cols-2 min-h-[90vh] border-b border-[#E5E5E5]">
-        {/* Left — text */}
         <div className="flex flex-col justify-center px-8 md:px-16 py-20 lg:py-0">
           <p className="text-xs text-[#111111]/40 font-medium mb-6 tracking-widest uppercase">
             Custom apparel for businesses
@@ -55,10 +37,8 @@ export default function HomeClient() {
             Custom merch<br />for your<br />business
           </h1>
           <p className="text-base text-[#111111]/50 max-w-sm mb-10 leading-relaxed">
-            From design to delivery. Premium custom apparel made in India. Configure online, reserve your slot, receive in 35 days.
+            From design to delivery. Premium custom apparel made in India. Configure online, reserve your slot, receive in {DELIVERY_DAYS} days.
           </p>
-
-          {/* Key facts inline */}
           <div className="flex gap-6 mb-10">
             <div>
               <p className="text-2xl font-bold text-[#111111]">50</p>
@@ -66,7 +46,7 @@ export default function HomeClient() {
             </div>
             <div className="w-px bg-[#E5E5E5]" />
             <div>
-              <p className="text-2xl font-bold text-[#111111]">35</p>
+              <p className="text-2xl font-bold text-[#111111]">{DELIVERY_DAYS}</p>
               <p className="text-xs text-[#111111]/40 uppercase tracking-wide">Day delivery</p>
             </div>
             <div className="w-px bg-[#E5E5E5]" />
@@ -75,26 +55,17 @@ export default function HomeClient() {
               <p className="text-xs text-[#111111]/40 uppercase tracking-wide">Made in India</p>
             </div>
           </div>
-
           <div className="flex flex-wrap gap-3">
-            <Link
-              href="/configure"
-              className="bg-[#111111] text-white px-8 py-4 text-sm font-medium hover:bg-black transition-colors"
-            >
+            <Link href="/configure" className="bg-[#111111] text-white px-8 py-4 text-sm font-medium hover:bg-black transition-colors">
               Start designing
             </Link>
-            <Link
-              href="/catalogue"
-              className="border border-[#111111]/20 text-[#111111] px-8 py-4 text-sm font-medium hover:border-[#111111] transition-colors"
-            >
+            <Link href="/catalogue" className="border border-[#111111]/20 text-[#111111] px-8 py-4 text-sm font-medium hover:border-[#111111] transition-colors">
               View catalogue
             </Link>
           </div>
         </div>
 
-        {/* Right — image / visual */}
         <div className="relative bg-[#F7F7F7] flex items-center justify-center min-h-64 lg:min-h-full overflow-hidden">
-          {/* Placeholder — replace with actual garment photo */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
               <p className="text-xs text-[#111111]/20 uppercase tracking-widest mb-2">Hero image</p>
@@ -102,17 +73,15 @@ export default function HomeClient() {
               <p className="text-xs text-[#111111]/15">public/hero.jpg</p>
             </div>
           </div>
-
-          {/* Floating product badge */}
           <div className="absolute bottom-8 left-8 bg-white border border-[#E5E5E5] px-5 py-4 shadow-sm">
             <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-1">Starting from</p>
-            <p className="text-2xl font-bold text-[#111111]">&#8377;180</p>
-            <p className="text-xs text-[#111111]/50">per piece · MOQ 50</p>
+            <p className="text-2xl font-bold text-[#111111]">&#8377;350</p>
+            <p className="text-xs text-[#111111]/50">per piece &middot; MOQ 50</p>
           </div>
         </div>
       </section>
 
-      {/* WHAT WE DO — immediate clarity strip */}
+      {/* WHAT WE DO */}
       <section className="border-b border-[#E5E5E5]">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-0 divide-x divide-[#E5E5E5]">
@@ -137,7 +106,7 @@ export default function HomeClient() {
           <div>
             <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">The process</p>
             <h2 className="text-4xl font-bold mb-6 tracking-tight leading-tight">
-              From brief to<br />delivery in 35 days
+              From brief to<br />delivery in {DELIVERY_DAYS} days
             </h2>
             <p className="text-[#111111]/50 text-sm leading-relaxed mb-8">
               Configure your order online in minutes. We review, produce, and ship — with full visibility at every stage.
@@ -151,7 +120,7 @@ export default function HomeClient() {
               { num: '01', title: 'Configure online', desc: 'Choose product, color, upload artwork, pick print technique.' },
               { num: '02', title: 'Reserve your slot', desc: 'Pay Rs.499 to confirm. We send a proforma within 24 hours.' },
               { num: '03', title: 'We produce', desc: 'Manufacturing and QA at our Greater Noida facility.' },
-              { num: '04', title: 'Delivered to you', desc: 'Packed and shipped. Tracking provided throughout.' },
+              { num: '04', title: 'Delivered to you', desc: `Packed and shipped. ${DELIVERY_DAYS}-day production timeline.` },
             ].map((s, i) => (
               <div key={s.num} className={`flex gap-5 px-6 py-5 ${i < 3 ? 'border-b border-[#E5E5E5]' : ''}`}>
                 <span className="text-xs font-bold text-[#111111]/20 shrink-0 pt-0.5">{s.num}</span>
@@ -173,11 +142,9 @@ export default function HomeClient() {
               <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">Pricing</p>
               <h2 className="text-4xl font-bold mb-3 tracking-tight">Estimate your order</h2>
               <p className="text-[#111111]/50 text-sm mb-10 leading-relaxed">
-                Transparent pricing, no hidden fees. Volume discounts up to 22% apply automatically.
+                All prices include fabric, stitching, single-color print, and neck label. GST 5% and shipping added separately.
               </p>
-
               <div className="flex flex-col gap-6">
-                {/* Product */}
                 <div>
                   <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-3">Product</p>
                   <div className="grid grid-cols-2 gap-1.5">
@@ -197,8 +164,6 @@ export default function HomeClient() {
                     ))}
                   </div>
                 </div>
-
-                {/* Quantity */}
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest">Quantity</p>
@@ -217,39 +182,47 @@ export default function HomeClient() {
               </div>
             </div>
 
-            {/* Output */}
             <div className="flex flex-col gap-4">
               <div className="bg-[#111111] p-8 text-white">
-                <p className="text-xs text-white/60 uppercase tracking-widest mb-1">Estimate</p>
+                <p className="text-xs text-white/50 uppercase tracking-widest mb-1">Estimate</p>
                 <p className="text-sm text-white/80 mb-6">{selected} &times; {qty} pcs</p>
                 <div className="flex flex-col gap-3 border-t border-white/20 pt-6">
                   <div className="flex justify-between text-sm">
-                    <span className="text-white/70">Per piece</span>
-                    <span className="text-white font-medium">&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
+                    <span className="text-white/60">Base price/piece</span>
+                    <span className="text-white">&#8377;{(PRODUCT_PRICES[selected] ?? 0).toLocaleString('en-IN')}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-white/70">Volume discount</span>
-                      <span className="text-white">-{(discount * 100).toFixed(0)}%</span>
+                      <span className="text-white/60">Volume discount ({(discount * 100).toFixed(0)}%)</span>
+                      <span className="text-green-400">applied</span>
                     </div>
                   )}
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/60">Price per piece</span>
+                    <span className="text-white font-medium">&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/60">Subtotal</span>
+                    <span className="text-white">&#8377;{subtotal.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="flex justify-between text-sm border-t border-white/10 pt-3">
+                    <span className="text-white/60">GST 5% (paid by client)</span>
+                    <span className="text-white">&#8377;{gst.toLocaleString('en-IN')}</span>
+                  </div>
                   <div className="flex justify-between text-2xl font-bold border-t border-white/20 pt-4 mt-1">
                     <span className="text-white">Total</span>
                     <span className="text-white">&#8377;{total.toLocaleString('en-IN')}</span>
                   </div>
                 </div>
-                <p className="text-xs text-white/40 mt-5 leading-relaxed">Excludes GST and shipping. Final quote sent within 24 hours.</p>
+                <div className="mt-5 pt-4 border-t border-white/10 text-xs text-white/40 flex flex-col gap-1">
+                  <span>+ Shipping quoted separately by email</span>
+                  <span>Delivery in {DELIVERY_DAYS} days from confirmation</span>
+                </div>
               </div>
-              <Link
-                href="/pricing"
-                className="border border-[#111111] text-[#111111] text-sm font-medium px-6 py-3.5 text-center hover:bg-[#111111] hover:text-white transition-colors"
-              >
+              <Link href="/pricing" className="border border-[#111111] text-[#111111] text-sm font-medium px-6 py-3.5 text-center hover:bg-[#111111] hover:text-white transition-colors">
                 Full pricing details
               </Link>
-              <Link
-                href="/configure"
-                className="bg-[#111111] text-white text-sm font-medium px-6 py-3.5 text-center hover:bg-black transition-colors"
-              >
+              <Link href="/configure" className="bg-[#111111] text-white text-sm font-medium px-6 py-3.5 text-center hover:bg-black transition-colors">
                 Start designing
               </Link>
             </div>
