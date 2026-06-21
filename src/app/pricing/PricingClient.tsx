@@ -3,15 +3,17 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 const products = [
-  { name: 'T-Shirt (200 GSM)', base: 280, gst: 5 },
-  { name: 'T-Shirt (260 GSM)', base: 340, gst: 5 },
-  { name: 'Doctor Tee', base: 360, gst: 5 },
-  { name: 'Long Sleeve', base: 420, gst: 5 },
-  { name: 'Sweatshirt', base: 580, gst: 5 },
-  { name: 'Hoodie', base: 650, gst: 5 },
-  { name: 'Sweatpants', base: 580, gst: 5 },
-  { name: 'Shorts', base: 320, gst: 5 },
-  { name: 'Tote Bag', base: 180, gst: 5 },
+  { name: 'Regular Fit Tee (200 GSM)', base: 280, gst: 5 },
+  { name: 'Boxy Fit Tee (200 GSM)', base: 280, gst: 5 },
+  { name: 'Regular Fit Tee (260 GSM)', base: 340, gst: 5 },
+  { name: 'Boxy Fit Tee (260 GSM)', base: 340, gst: 5 },
+  { name: 'Longsleeve Tee (260 GSM)', base: 420, gst: 5 },
+  { name: 'Regular Fit Sweatshirt (320 GSM)', base: 580, gst: 5 },
+  { name: 'Boxy Fit Sweatshirt (320 GSM)', base: 580, gst: 5 },
+  { name: 'Regular Fit Hoodie (320 GSM)', base: 650, gst: 5 },
+  { name: 'Boxy Fit Hoodie (320 GSM)', base: 650, gst: 5 },
+  { name: 'Shorts (220 GSM)', base: 320, gst: 5 },
+  { name: 'Canvas Tote Bag', base: 180, gst: 5 },
 ]
 
 const tiers = [
@@ -31,7 +33,7 @@ function getDiscount(qty: number): number {
 
 export default function PricingClient() {
   const [qty, setQty] = useState<number>(50)
-  const [selected, setSelected] = useState<string>('T-Shirt (200 GSM)')
+  const [selected, setSelected] = useState<string>('Regular Fit Tee (200 GSM)')
 
   const product = products.find(p => p.name === selected) ?? products[0]
   const discount = getDiscount(qty)

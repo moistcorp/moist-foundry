@@ -24,15 +24,17 @@ const industries = [
 ]
 
 const estimatorProducts = [
-  { name: 'Tee (200 GSM)', base: 280 },
-  { name: 'Tee (260 GSM)', base: 340 },
-  { name: 'Doctor Tee', base: 360 },
-  { name: 'Long Sleeve', base: 420 },
-  { name: 'Sweatshirt', base: 580 },
-  { name: 'Hoodie', base: 650 },
-  { name: 'Sweatpants', base: 580 },
-  { name: 'Shorts', base: 320 },
-  { name: 'Tote Bag', base: 180 },
+  { name: 'Regular Fit Tee (200 GSM)', base: 280 },
+  { name: 'Boxy Fit Tee (200 GSM)', base: 280 },
+  { name: 'Regular Fit Tee (260 GSM)', base: 340 },
+  { name: 'Boxy Fit Tee (260 GSM)', base: 340 },
+  { name: 'Longsleeve Tee (260 GSM)', base: 420 },
+  { name: 'Regular Fit Sweatshirt (320 GSM)', base: 580 },
+  { name: 'Boxy Fit Sweatshirt (320 GSM)', base: 580 },
+  { name: 'Regular Fit Hoodie (320 GSM)', base: 650 },
+  { name: 'Boxy Fit Hoodie (320 GSM)', base: 650 },
+  { name: 'Shorts (220 GSM)', base: 320 },
+  { name: 'Canvas Tote Bag', base: 180 },
 ]
 
 function getDiscount(qty: number) {
