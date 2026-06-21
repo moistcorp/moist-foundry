@@ -13,7 +13,9 @@ export default function Footer() {
           <Link href="/how-it-works" className="hover:text-[#111111] transition-colors">How it works</Link>
           <Link href="/pricing" className="hover:text-[#111111] transition-colors">Pricing</Link>
           <Link href="/journal" className="hover:text-[#111111] transition-colors">Journal</Link>
+          <Link href="/work" className="hover:text-[#111111] transition-colors">Work</Link>
           <Link href="/contact" className="hover:text-[#111111] transition-colors">Contact</Link>
+        
         </div>
         <div className="flex flex-col gap-2">
           <a href="https://moistcorp.com" target="_blank" className="hover:text-[#111111] transition-colors">Moist Corp</a>
