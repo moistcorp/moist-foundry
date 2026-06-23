@@ -26,7 +26,7 @@ export default function Shop() {
             All pieces manufactured at our Greater Noida facility. Ships within 24 hours.
           </p>
           <div className="flex gap-6 text-xs text-[#111111]/40 shrink-0">
-            <span>Free shipping</span>
+            <span>Free shipping above ₹2000 spend</span>
             <span>Easy returns</span>
           </div>
         </div>

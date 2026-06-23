@@ -171,7 +171,7 @@ export default function ShopProductClient({ product, allProducts }: { product: P
               </ul>
             </div>
 
-            <p className="text-xs text-[#111111]/40">Free shipping above ₹2000. Ships within 7 days.</p>
+            <p className="text-xs text-[#111111]/40">Shipping charges excluded. Ships within 24 hours.</p>
           </div>
         </div>
       </div>
