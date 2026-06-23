@@ -31,7 +31,7 @@ export default function PricingClient() {
           Simple, transparent pricing
         </h1>
         <p className="text-[#111111]/50 max-w-lg text-lg">
-          All prices include fabric, stitching, single-color screen print, neck label, and our margin. GST at 5% added at invoice. Shipping quoted separately.
+          All prices include fabric, stitching, single-color screen print, neck label, and our margin. Shipping Charges Excluded.
         </p>
       </section>
 
@@ -187,7 +187,7 @@ export default function PricingClient() {
                   <span>&#8377;{subtotal.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-white/60">GST (5%) — paid by client</span>
+                  <span className="text-white/60">GST (5%)</span>
                   <span>&#8377;{gst.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold border-t border-white/10 pt-4 mt-1">

@@ -142,7 +142,7 @@ export default function HomeClient() {
               <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">Pricing</p>
               <h2 className="text-4xl font-bold mb-3 tracking-tight">Estimate your order</h2>
               <p className="text-[#111111]/50 text-sm mb-10 leading-relaxed">
-                All prices include fabric, stitching, single-color print, and neck label. GST 5% and shipping added separately.
+                All prices include fabric, stitching, single-color print, and neck label.
               </p>
               <div className="flex flex-col gap-6">
                 <div>
@@ -206,7 +206,7 @@ export default function HomeClient() {
                     <span className="text-white">&#8377;{subtotal.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-sm border-t border-white/10 pt-3">
-                    <span className="text-white/60">GST 5% (paid by client)</span>
+                    <span className="text-white/60">GST 5%</span>
                     <span className="text-white">&#8377;{gst.toLocaleString('en-IN')}</span>
                   </div>
                   <div className="flex justify-between text-2xl font-bold border-t border-white/20 pt-4 mt-1">
@@ -215,7 +215,7 @@ export default function HomeClient() {
                   </div>
                 </div>
                 <div className="mt-5 pt-4 border-t border-white/10 text-xs text-white/40 flex flex-col gap-1">
-                  <span>+ Shipping quoted separately by email</span>
+                  <span>+ Shipping Charges Excluded</span>
                   <span>Delivery in {DELIVERY_DAYS} days from confirmation</span>
                 </div>
               </div>
