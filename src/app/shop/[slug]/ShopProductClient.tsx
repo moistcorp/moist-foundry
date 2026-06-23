@@ -5,6 +5,7 @@ import { Product } from '@/lib/products'
 import { useCartStore } from '@/lib/store'
 import Link from 'next/link'
 import Breadcrumbs from '@/components/ui/Breadcrumbs'
+import { getSizeChart } from '@/lib/sizecharts'
 
 function ImageZoom({ src, alt }: { src: string; alt: string }) {
   const [zoomed, setZoomed] = useState(false)

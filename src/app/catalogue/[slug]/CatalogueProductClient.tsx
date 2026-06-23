@@ -5,8 +5,10 @@ import Link from 'next/link'
 import Breadcrumbs from '@/components/ui/Breadcrumbs'
 import { useCartStore } from '@/lib/store'
 import CartDrawer from '@/components/ui/CartDrawer'
+import { getSizeChart } from '@/lib/sizecharts'
 
 export default function CatalogueProductClient({ product, allProducts }: { product: Product; allProducts: Product[] }) {
+  const sizeChart = getSizeChart(product.slug)
   const [cartOpen, setCartOpen] = useState(false)
   const addItem = useCartStore(s => s.addItem)
   const related = allProducts
@@ -85,34 +87,38 @@ export default function CatalogueProductClient({ product, allProducts }: { produ
               </ul>
             </div>
 
-            {product.sizeChart && (
-              <div>
-                <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-3">Size chart (inches)</p>
-                <div className="border border-[#E5E5E5] overflow-hidden">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="bg-[#F7F7F7]">
-                        <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Size</th>
-                        <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Chest</th>
-                        <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Length</th>
-                        {product.sizeChart[0].shoulder && <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Shoulder</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E5E5E5]">
-                      {product.sizeChart.map(row => (
-                        <tr key={row.size}>
-                          <td className="px-4 py-3 font-semibold text-[#111111]">{row.size}</td>
-                          <td className="px-4 py-3 text-[#111111]/60">{row.chest}</td>
-                          <td className="px-4 py-3 text-[#111111]/60">{row.length}</td>
-                          {row.shoulder && <td className="px-4 py-3 text-[#111111]/60">{row.shoulder}</td>}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <p className="text-xs text-[#111111]/30 mt-2">All measurements are of the garment laid flat.</p>
-              </div>
-            )}
+            {sizeChart && (
+  <div>
+    <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-3">Size chart</p>
+    <div className="border border-[#E5E5E5] overflow-hidden">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="bg-[#F7F7F7]">
+            <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Size</th>
+            <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Chest</th>
+            <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Length</th>
+            {sizeChart.sizes[0].shoulder && <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Shoulder</th>}
+            {sizeChart.sizes[0].waist && <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Waist</th>}
+            {sizeChart.sizes[0].inseam && <th className="text-left px-4 py-3 font-medium text-[#111111]/50">Inseam</th>}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#E5E5E5]">
+          {sizeChart.sizes.map(row => (
+            <tr key={row.size}>
+              <td className="px-4 py-3 font-semibold text-[#111111]">{row.size}</td>
+              <td className="px-4 py-3 text-[#111111]/60">{row.chest}</td>
+              <td className="px-4 py-3 text-[#111111]/60">{row.length}</td>
+              {row.shoulder && <td className="px-4 py-3 text-[#111111]/60">{row.shoulder}</td>}
+              {row.waist && <td className="px-4 py-3 text-[#111111]/60">{row.waist}</td>}
+              {row.inseam && <td className="px-4 py-3 text-[#111111]/60">{row.inseam}</td>}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    {sizeChart.note && <p className="text-xs text-[#111111]/30 mt-2">{sizeChart.note}</p>}
+  </div>
+)}
 
             <div>
               <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-3">Care instructions</p>

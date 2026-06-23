@@ -193,9 +193,29 @@ export default function ConfigureClient() {
   const actualSizeTotal = Object.values(sizeQty).reduce((a, b) => a + b, 0)
 
   function handleArtwork(file: File, side: 'front' | 'back') {
-    const url = URL.createObjectURL(file)
-    if (side === 'front') { setFrontArtwork(file); setFrontPreview(url) }
-    else { setBackArtwork(file); setBackPreview(url) }
+    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'application/postscript', 'application/illustrator']
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.svg', '.ai']
+const MAX_SIZE_MB = 4.5
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
+
+const [fileError, setFileError] = useState('')
+
+function handleArtwork(file: File, side: 'front' | 'back') {
+  setFileError('')
+  const ext = '.' + file.name.split('.').pop()?.toLowerCase()
+  const isValidType = ALLOWED_TYPES.includes(file.type) || ALLOWED_EXTENSIONS.includes(ext)
+  if (!isValidType) {
+    setFileError(`Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`)
+    return
+  }
+  if (file.size > MAX_SIZE_BYTES) {
+    setFileError(`File too large. Maximum size is ${MAX_SIZE_MB}MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB`)
+    return
+  }
+  const url = URL.createObjectURL(file)
+  if (side === 'front') { setFrontArtwork(file); setFrontPreview(url) }
+  else { setBackArtwork(file); setBackPreview(url) }
+}
   }
 
   function togglePlacement(p: string) {
@@ -379,9 +399,9 @@ export default function ConfigureClient() {
             {/* Artwork */}
             <Accordion title="Artwork upload">
               <div className="flex flex-col gap-4">
-                <input ref={frontRef} type="file" accept=".png,.svg,.jpg,.jpeg" className="hidden"
+                <input ref={frontRef} type="file" accept=".png,.svg,.jpg,.jpeg,.ai" className="hidden"
                   onChange={e => e.target.files?.[0] && handleArtwork(e.target.files[0], 'front')} />
-                <input ref={backRef} type="file" accept=".png,.svg,.jpg,.jpeg" className="hidden"
+                <input ref={backRef} type="file" accept=".png,.svg,.jpg,.jpeg,.ai" className="hidden"
                   onChange={e => e.target.files?.[0] && handleArtwork(e.target.files[0], 'back')} />
 
                 <div>
