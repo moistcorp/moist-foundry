@@ -1,19 +1,29 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import {
+  PRODUCT_PRICES,
+  calcOrder,
+  getDeliveryDate,
+  DELIVERY_DAYS,
+  RUSH_DELIVERY_DAYS,
+  getRushCharge,
+  getDiscount,
+  VOLUME_TIERS,
+} from '@/lib/pricing'
 
 const products = [
-  { name: 'Regular Fit Tee (200 GSM)', basePrice: 280, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
-  { name: 'Boxy Fit Tee (200 GSM)', basePrice: 280, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
-  { name: 'Regular Fit Tee (260 GSM)', basePrice: 340, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
-  { name: 'Boxy Fit Tee (260 GSM)', basePrice: 340, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
-  { name: 'Longsleeve Tee (260 GSM)', basePrice: 420, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
-  { name: 'Regular Fit Sweatshirt (320 GSM)', basePrice: 580, techniques: ['Screen Print', 'Embroidery'], mockColor: '#F8F8F8' },
-  { name: 'Boxy Fit Sweatshirt (320 GSM)', basePrice: 580, techniques: ['Screen Print', 'Embroidery'], mockColor: '#F8F8F8' },
-  { name: 'Regular Fit Hoodie (320 GSM)', basePrice: 650, techniques: ['Screen Print', 'Embroidery', 'Heat Transfer'], mockColor: '#F8F8F8' },
-  { name: 'Boxy Fit Hoodie (320 GSM)', basePrice: 650, techniques: ['Screen Print', 'Embroidery', 'Heat Transfer'], mockColor: '#F8F8F8' },
-  { name: 'Shorts (220 GSM)', basePrice: 320, techniques: ['Screen Print', 'DTG', 'Embroidery'], mockColor: '#F8F8F8' },
-  { name: 'Canvas Tote Bag', basePrice: 180, techniques: ['Screen Print', 'DTG'], mockColor: '#D4C5A9' },
+  { name: 'Regular Fit Tee (200 GSM)', techniques: ['Screen Print', 'DTG', 'Embroidery'] },
+  { name: 'Boxy Fit Tee (200 GSM)', techniques: ['Screen Print', 'DTG', 'Embroidery'] },
+  { name: 'Regular Fit Tee (260 GSM)', techniques: ['Screen Print', 'DTG', 'Embroidery'] },
+  { name: 'Boxy Fit Tee (260 GSM)', techniques: ['Screen Print', 'DTG', 'Embroidery'] },
+  { name: 'Longsleeve Tee (260 GSM)', techniques: ['Screen Print', 'DTG', 'Embroidery'] },
+  { name: 'Regular Fit Sweatshirt (320 GSM)', techniques: ['Screen Print', 'Embroidery'] },
+  { name: 'Boxy Fit Sweatshirt (320 GSM)', techniques: ['Screen Print', 'Embroidery'] },
+  { name: 'Regular Fit Hoodie (320 GSM)', techniques: ['Screen Print', 'Embroidery', 'Heat Transfer'] },
+  { name: 'Boxy Fit Hoodie (320 GSM)', techniques: ['Screen Print', 'Embroidery', 'Heat Transfer'] },
+  { name: 'Shorts (220 GSM)', techniques: ['Screen Print', 'DTG', 'Embroidery'] },
+  { name: 'Canvas Tote Bag', techniques: ['Screen Print', 'DTG'] },
 ]
 
 const colors = [
@@ -49,41 +59,21 @@ const productGroups = [
   { category: 'Accessories', items: products.filter(p => p.name.includes('Tote')) },
 ]
 
-// Screens in the flow
 type Screen = 'picker' | 'configure' | 'summary' | 'shipping' | 'review' | 'success'
 
-function getDiscount(qty: number): number {
-  if (qty >= 1000) return 0.22
-  if (qty >= 500) return 0.17
-  if (qty >= 250) return 0.12
-  if (qty >= 100) return 0.07
-  return 0
-}
-
-function getDeliveryDate(): string {
-  const d = new Date()
-  d.setDate(d.getDate() + 35)
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-}
-
-// Auto-distribute quantity across sizes (bell curve)
 function distributeQty(total: number): Record<string, number> {
-  const weights = { XS: 0.05, S: 0.15, M: 0.30, L: 0.30, XL: 0.15, XXL: 0.05 }
+  const weights: Record<string, number> = { XS: 0.05, S: 0.15, M: 0.30, L: 0.30, XL: 0.15, XXL: 0.05 }
   const raw: Record<string, number> = {}
   let sum = 0
   for (const [s, w] of Object.entries(weights)) {
     raw[s] = Math.round(total * w)
     sum += raw[s]
   }
-  // Fix rounding — add/remove from M
-  const diff = total - sum
-  raw['M'] = (raw['M'] ?? 0) + diff
+  raw['M'] = (raw['M'] ?? 0) + (total - sum)
   return raw
 }
 
-function GarmentSVG({
-  color, placements: active, frontPreview, backPreview, activeView, productName,
-}: {
+function GarmentSVG({ color, placements: active, frontPreview, backPreview, activeView, productName }: {
   color: string; placements: string[]; frontPreview: string | null
   backPreview: string | null; activeView: 'Front' | 'Back'; productName: string
 }) {
@@ -98,12 +88,8 @@ function GarmentSVG({
     return (
       <svg viewBox="0 0 300 320" width="100%" style={{ maxWidth: 280 }} xmlns="http://www.w3.org/2000/svg">
         <path d="M60 100 L80 60 L100 60 L100 80 C100 90 200 90 200 80 L200 60 L220 60 L240 100 L240 280 L60 280 Z" fill={gc} stroke={sc} strokeWidth="1.5" />
-        {frontPreview && (
-          <image href={frontPreview} x="105" y="140" width="90" height="90" preserveAspectRatio="xMidYMid meet" />
-        )}
-        {!frontPreview && active.includes('Front') && (
-          <rect x="105" y="140" width="90" height="90" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />
-        )}
+        {frontPreview && <image href={frontPreview} x="105" y="140" width="90" height="90" preserveAspectRatio="xMidYMid meet" />}
+        {!frontPreview && active.includes('Front') && <rect x="105" y="140" width="90" height="90" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />}
       </svg>
     )
   }
@@ -125,7 +111,9 @@ function GarmentSVG({
   )
 }
 
-function Accordion({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+function Accordion({ title, children, defaultOpen = false }: {
+  title: string; children: React.ReactNode; defaultOpen?: boolean
+}) {
   const [open, setOpen] = useState(defaultOpen)
   return (
     <div className="border border-[#E5E5E5]">
@@ -133,7 +121,7 @@ function Accordion({ title, children, defaultOpen = false }: { title: string; ch
         className="w-full flex items-center justify-between px-5 py-4 text-left">
         <span className="text-sm font-semibold text-[#111111]">{title}</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}>
+          className={`transition-transform duration-200 shrink-0 ${open ? 'rotate-180' : ''}`}>
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
@@ -160,14 +148,20 @@ export default function ConfigureClient() {
   const [technique, setTechnique] = useState('')
   const [neckLabel, setNeckLabel] = useState('No label')
   const [totalQty, setTotalQty] = useState(50)
-  const [sizeQty, setSizeQty] = useState<Record<string, number>>({ XS: 0, S: 0, M: 0, L: 0, XL: 0, XXL: 0 })
-  const [details, setDetails] = useState({ name: '', company: '', email: '', phone: '', notes: '' })
-  const [shipping, setShipping] = useState({ address: '', city: '', state: '', pincode: '' })
+  const [rush, setRush] = useState(false)
+  const [sizeQty, setSizeQty] = useState<Record<string, number>>({
+    XS: 0, S: 0, M: 0, L: 0, XL: 0, XXL: 0,
+  })
+  const [details, setDetails] = useState({
+    name: '', company: '', email: '', phone: '', notes: '',
+  })
+  const [shipping, setShipping] = useState({
+    address: '', city: '', state: '', pincode: '',
+  })
 
   const frontRef = useRef<HTMLInputElement>(null)
   const backRef = useRef<HTMLInputElement>(null)
 
-  // Load from URL
   useEffect(() => {
     const p = searchParams.get('product')
     const c = searchParams.get('color')
@@ -181,7 +175,6 @@ export default function ConfigureClient() {
     if (s && ['configure', 'summary', 'shipping', 'review'].includes(s)) setScreen(s as Screen)
   }, [])
 
-  // Save to URL
   useEffect(() => {
     if (screen === 'picker' || screen === 'success') return
     const params = new URLSearchParams()
@@ -194,12 +187,9 @@ export default function ConfigureClient() {
   }, [product, color, technique, activePlacements, screen])
 
   const selectedProduct = products.find(p => p.name === product) ?? products[0]
-  const discount = getDiscount(totalQty)
-  const pricePerPiece = Math.round(selectedProduct.basePrice * (1 - discount))
-  const subtotal = pricePerPiece * totalQty
-  const gst = Math.round(subtotal * 0.05)
-  const grandTotal = subtotal + gst
-  const deliveryDate = getDeliveryDate()
+  const { pricePerPiece, subtotal, gst, total, discount, discountedBase, rushCharge } = calcOrder(product, totalQty, rush)
+  const deliveryDate = getDeliveryDate(rush)
+  const deliveryDays = rush ? RUSH_DELIVERY_DAYS : DELIVERY_DAYS
   const actualSizeTotal = Object.values(sizeQty).reduce((a, b) => a + b, 0)
 
   function handleArtwork(file: File, side: 'front' | 'back') {
@@ -250,7 +240,7 @@ export default function ConfigureClient() {
                       className="p-5 border border-[#E5E5E5] text-left hover:border-[#111111] hover:bg-[#F7F7F7] transition-colors group">
                       <div className="flex justify-between items-start gap-4">
                         <p className="text-sm font-semibold text-[#111111] group-hover:underline leading-snug">{p.name}</p>
-                        <p className="text-xs text-[#111111]/40 shrink-0">from &#8377;{p.basePrice}</p>
+                        <p className="text-xs text-[#111111]/40 shrink-0">from &#8377;{(PRODUCT_PRICES[p.name] ?? 0).toLocaleString('en-IN')}</p>
                       </div>
                       <p className="text-xs text-[#111111]/40 mt-2">{p.techniques.join(' · ')}</p>
                     </button>
@@ -275,9 +265,7 @@ export default function ConfigureClient() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-[#111111] mb-3 tracking-tight">Slot reserved</h1>
-          <p className="text-[#111111]/60 mb-2 text-sm">
-            Thanks {details.name.split(' ')[0]}. Confirmation sent to
-          </p>
+          <p className="text-[#111111]/60 mb-2 text-sm">Thanks {details.name.split(' ')[0]}. Confirmation sent to</p>
           <p className="font-medium text-[#111111] mb-4">{details.email}</p>
           <p className="text-xs text-[#111111]/40 mb-2">Estimated delivery: <strong>{deliveryDate}</strong></p>
           <p className="text-xs text-[#111111]/40 mb-8">Our team will send a proforma within 24 hours.</p>
@@ -323,24 +311,42 @@ export default function ConfigureClient() {
             <p className="text-xs text-[#111111]/40 mt-1">{color} colorway</p>
           </div>
 
-          {/* Live pricing */}
+          {/* Live pricing card */}
           {totalQty >= 50 && (
             <div className="mt-6 bg-white border border-[#E5E5E5] px-6 py-4 w-full max-w-xs">
-              <div className="flex justify-between items-center mb-1">
+              <div className="flex justify-between items-center mb-1.5">
                 <span className="text-xs text-[#111111]/40">Unit cost</span>
                 <span className="text-sm font-bold text-[#111111]">&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
               </div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-[#111111]/40">Total ({totalQty} pcs)</span>
+              {discount > 0 && (
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs text-[#111111]/40">Volume discount</span>
+                  <span className="text-xs text-green-600 font-medium">-{(discount * 100).toFixed(0)}%</span>
+                </div>
+              )}
+              {rush && rushCharge > 0 && (
+                <div className="flex justify-between items-center mb-1.5">
+                  <span className="text-xs text-[#111111]/40">Rush premium</span>
+                  <span className="text-xs text-[#111111]/60">+&#8377;{rushCharge}/pc</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs text-[#111111]/40">Subtotal</span>
                 <span className="text-sm font-bold text-[#111111]">&#8377;{subtotal.toLocaleString('en-IN')}</span>
               </div>
-              <div className="flex justify-between items-center pt-2 border-t border-[#E5E5E5] mt-2">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="text-xs text-[#111111]/40">GST (5%)</span>
+                <span className="text-xs text-[#111111]/60">&#8377;{gst.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-[#E5E5E5] mt-1">
+                <span className="text-xs font-semibold text-[#111111]">Total (incl. GST)</span>
+                <span className="text-sm font-bold text-[#111111]">&#8377;{total.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center mt-2 pt-2 border-t border-[#E5E5E5]">
                 <span className="text-xs text-[#111111]/40">Est. delivery</span>
                 <span className="text-xs font-medium text-[#111111]">{deliveryDate}</span>
               </div>
-              {discount > 0 && (
-                <p className="text-xs text-green-600 mt-1">{(discount * 100).toFixed(0)}% volume discount applied</p>
-              )}
+              <p className="text-xs text-[#111111]/30 mt-2">+ Shipping quoted separately</p>
             </div>
           )}
         </div>
@@ -354,7 +360,7 @@ export default function ConfigureClient() {
 
           <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-3">
 
-            {/* Color accordion */}
+            {/* Color */}
             <Accordion title={`Garment color${color ? ` — ${color}` : ''}`} defaultOpen={true}>
               <div className="grid grid-cols-5 gap-3">
                 {colors.map(c => (
@@ -362,13 +368,15 @@ export default function ConfigureClient() {
                     className="flex flex-col items-center gap-1.5">
                     <div className={`w-9 h-9 rounded-full border-2 transition-all ${color === c.name ? 'border-[#111111] scale-110' : 'border-[#E5E5E5] hover:border-[#111111]/40'}`}
                       style={{ backgroundColor: c.hex }} />
-                    <span className={`text-[10px] text-center leading-tight ${color === c.name ? 'text-[#111111] font-medium' : 'text-[#111111]/40'}`}>{c.name}</span>
+                    <span className={`text-[10px] text-center leading-tight ${color === c.name ? 'text-[#111111] font-medium' : 'text-[#111111]/40'}`}>
+                      {c.name}
+                    </span>
                   </button>
                 ))}
               </div>
             </Accordion>
 
-            {/* Artwork accordion */}
+            {/* Artwork */}
             <Accordion title="Artwork upload">
               <div className="flex flex-col gap-4">
                 <input ref={frontRef} type="file" accept=".png,.svg,.jpg,.jpeg" className="hidden"
@@ -394,7 +402,9 @@ export default function ConfigureClient() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-[#111111]/50 mb-2 uppercase tracking-widest">Back artwork <span className="normal-case font-normal">(optional)</span></p>
+                  <p className="text-xs text-[#111111]/50 mb-2 uppercase tracking-widest">
+                    Back artwork <span className="normal-case font-normal">(optional)</span>
+                  </p>
                   {backPreview ? (
                     <div className="border border-[#E5E5E5] p-3 flex items-center gap-3">
                       <img src={backPreview} alt="Back" className="w-10 h-10 object-contain bg-[#F7F7F7]" />
@@ -413,8 +423,8 @@ export default function ConfigureClient() {
               </div>
             </Accordion>
 
-            {/* Placement + Technique accordion */}
-            <Accordion title="Artwork placement &amp; technique">
+            {/* Placement + Technique */}
+            <Accordion title="Placement &amp; print technique">
               <div className="flex flex-col gap-5">
                 <div>
                   <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-2">Print placement</p>
@@ -422,7 +432,9 @@ export default function ConfigureClient() {
                     {placements.map(p => (
                       <button key={p} type="button" onClick={() => togglePlacement(p)}
                         className={`px-3 py-2.5 border text-xs text-left transition-colors flex items-center justify-between ${
-                          activePlacements.includes(p) ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'
+                          activePlacements.includes(p)
+                            ? 'border-[#111111] bg-[#111111]/5 font-medium'
+                            : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'
                         }`}>
                         {p}
                         {activePlacements.includes(p) && (
@@ -440,7 +452,9 @@ export default function ConfigureClient() {
                   <div className="flex flex-col gap-1.5">
                     {selectedProduct.techniques.map(t => (
                       <button key={t} type="button" onClick={() => setTechnique(t)}
-                        className={`px-4 py-3 border text-left transition-colors ${technique === t ? 'border-[#111111] bg-[#111111]/5' : 'border-[#E5E5E5] hover:border-[#111111]/40'}`}>
+                        className={`px-4 py-3 border text-left transition-colors ${
+                          technique === t ? 'border-[#111111] bg-[#111111]/5' : 'border-[#E5E5E5] hover:border-[#111111]/40'
+                        }`}>
                         <p className="text-xs font-medium">{t}</p>
                         <p className="text-xs text-[#111111]/40 mt-0.5">{techniqueInfo[t]}</p>
                       </button>
@@ -450,12 +464,14 @@ export default function ConfigureClient() {
               </div>
             </Accordion>
 
-            {/* Neck label accordion */}
+            {/* Neck label */}
             <Accordion title={`Neck label — ${neckLabel}`}>
               <div className="grid grid-cols-2 gap-2">
                 {neckLabels.map(l => (
                   <button key={l} type="button" onClick={() => setNeckLabel(l)}
-                    className={`px-3 py-2.5 border text-xs text-left transition-colors ${neckLabel === l ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'}`}>
+                    className={`px-3 py-2.5 border text-xs text-left transition-colors ${
+                      neckLabel === l ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'
+                    }`}>
                     {l}
                   </button>
                 ))}
@@ -468,7 +484,7 @@ export default function ConfigureClient() {
               <div className="flex items-center gap-3 mb-3">
                 <button type="button"
                   onClick={() => setTotalQty(q => Math.max(50, q - 10))}
-                  className="w-10 h-10 border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center">
+                  className="w-10 h-10 border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center shrink-0">
                   -
                 </button>
                 <input
@@ -483,11 +499,48 @@ export default function ConfigureClient() {
                 />
                 <button type="button"
                   onClick={() => setTotalQty(q => q + 10)}
-                  className="w-10 h-10 border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center">
+                  className="w-10 h-10 border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center shrink-0">
                   +
                 </button>
               </div>
-              <p className="text-xs text-[#111111]/40">Minimum 50 pieces. You can type any number directly.</p>
+              <p className="text-xs text-[#111111]/40 mb-4">Minimum 50 pieces. Type any number directly.</p>
+
+              {/* Volume tier indicator */}
+              <div className="flex flex-col gap-1 border border-[#E5E5E5] overflow-hidden">
+                {VOLUME_TIERS.map(t => (
+                  <div key={t.min}
+                    className={`flex justify-between text-xs px-3 py-2 transition-colors ${
+                      getDiscount(totalQty) === t.discount ? 'bg-[#111111] text-white' : 'text-[#111111]/30'
+                    }`}>
+                    <span>{t.min}{t.max === Infinity ? '+' : `–${t.max}`} pcs</span>
+                    <span>{t.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Rush order */}
+            <div className="border border-[#E5E5E5] p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-[#111111]">Rush order</p>
+                  <p className="text-xs text-[#111111]/50 mt-0.5">
+                    {rush
+                      ? `Delivery in ${RUSH_DELIVERY_DAYS} days · +&#8377;${getRushCharge(totalQty)}/pc`
+                      : `Standard: ${DELIVERY_DAYS} days`}
+                  </p>
+                </div>
+                <button type="button" onClick={() => setRush(!rush)}
+                  className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${rush ? 'bg-[#111111]' : 'bg-[#E5E5E5]'}`}>
+                  <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${rush ? 'left-6' : 'left-1'}`} />
+                </button>
+              </div>
+              {rush && (
+                <p className="text-xs text-[#111111]/50 mt-3 pt-3 border-t border-[#E5E5E5]">
+                  Rush premium: +&#8377;{getRushCharge(totalQty)}/piece
+                  (&#8377;{(getRushCharge(totalQty) * totalQty).toLocaleString('en-IN')} total)
+                </p>
+              )}
             </div>
           </div>
 
@@ -496,12 +549,13 @@ export default function ConfigureClient() {
             <button type="button"
               disabled={!canProceedToSummary()}
               onClick={() => {
-                // Auto-distribute sizes when moving to summary
                 setSizeQty(distributeQty(totalQty))
                 setScreen('summary')
               }}
               className={`w-full py-3.5 text-sm font-medium transition-colors ${
-                canProceedToSummary() ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
+                canProceedToSummary()
+                  ? 'bg-[#111111] text-white hover:bg-black'
+                  : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
               }`}>
               {canProceedToSummary() ? 'Next: Order summary' : 'Complete all sections above'}
             </button>
@@ -511,7 +565,7 @@ export default function ConfigureClient() {
     )
   }
 
-  // ── ORDER SUMMARY SCREEN ──────────────────────────────────────
+  // ── ORDER SUMMARY ─────────────────────────────────────────────
   if (screen === 'summary') {
     return (
       <div className="max-w-3xl mx-auto px-6 py-16">
@@ -525,10 +579,12 @@ export default function ConfigureClient() {
 
         <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-2">Step 2 of 5</p>
         <h1 className="text-3xl font-bold tracking-tight mb-2">Order summary</h1>
-        <p className="text-[#111111]/50 text-sm mb-10">We have auto-distributed your quantity across sizes. Adjust as needed.</p>
+        <p className="text-[#111111]/50 text-sm mb-10">
+          We&apos;ve auto-distributed your quantity across sizes. Adjust as needed — total must match {totalQty} pieces.
+        </p>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Size distribution */}
+          {/* Size breakdown */}
           <div>
             <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-3">Size breakdown</p>
             <div className="flex flex-col gap-2 mb-4">
@@ -538,33 +594,39 @@ export default function ConfigureClient() {
                   <div className="flex items-center gap-3">
                     <button type="button"
                       onClick={() => setSizeQty(prev => ({ ...prev, [s]: Math.max(0, (prev[s] ?? 0) - 1) }))}
-                      className="w-7 h-7 border border-[#E5E5E5] hover:border-[#111111] transition-colors flex items-center justify-center text-base">-</button>
+                      className="w-7 h-7 border border-[#E5E5E5] hover:border-[#111111] transition-colors flex items-center justify-center text-base">
+                      -
+                    </button>
                     <span className="w-8 text-center text-sm font-medium">{sizeQty[s]}</span>
                     <button type="button"
                       onClick={() => setSizeQty(prev => ({ ...prev, [s]: (prev[s] ?? 0) + 1 }))}
-                      className="w-7 h-7 border border-[#E5E5E5] hover:border-[#111111] transition-colors flex items-center justify-center text-base">+</button>
+                      className="w-7 h-7 border border-[#E5E5E5] hover:border-[#111111] transition-colors flex items-center justify-center text-base">
+                      +
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className={`p-3 text-xs font-medium border ${
-              actualSizeTotal === totalQty ? 'bg-green-50 text-green-700 border-green-200'
-              : actualSizeTotal > totalQty ? 'bg-red-50 text-red-600 border-red-200'
-              : 'bg-[#111111]/5 text-[#111111]/60 border-[#111111]/10'
+              actualSizeTotal === totalQty
+                ? 'bg-green-50 text-green-700 border-green-200'
+                : actualSizeTotal > totalQty
+                ? 'bg-red-50 text-red-600 border-red-200'
+                : 'bg-[#111111]/5 text-[#111111]/60 border-[#111111]/10'
             }`}>
               {actualSizeTotal === totalQty
-                ? `${actualSizeTotal} pieces — matches your order quantity`
+                ? `${actualSizeTotal} pieces — matches your order`
                 : actualSizeTotal > totalQty
-                ? `${actualSizeTotal} pieces — ${actualSizeTotal - totalQty} over your order quantity`
-                : `${actualSizeTotal} pieces — ${totalQty - actualSizeTotal} short of your order quantity`}
+                ? `${actualSizeTotal} pieces — ${actualSizeTotal - totalQty} over limit`
+                : `${actualSizeTotal} of ${totalQty} pieces — ${totalQty - actualSizeTotal} remaining`}
             </div>
           </div>
 
-          {/* Order details */}
+          {/* Pricing + details */}
           <div className="flex flex-col gap-4">
-            <div className="border border-[#E5E5E5] p-5">
-              <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-4">Configuration</p>
+            <div className="border border-[#E5E5E5] p-5 text-xs">
+              <p className="font-medium text-[#111111]/40 uppercase tracking-widest mb-4">Configuration</p>
               {[
                 { label: 'Product', value: product },
                 { label: 'Color', value: color },
@@ -572,53 +634,61 @@ export default function ConfigureClient() {
                 { label: 'Placement', value: activePlacements.join(', ') },
                 { label: 'Neck label', value: neckLabel },
                 { label: 'Quantity', value: `${totalQty} pcs` },
+                { label: 'Delivery', value: `${deliveryDays} days · ${deliveryDate}` },
               ].map(row => (
-                <div key={row.label} className="flex justify-between py-2 border-b border-[#F7F7F7] last:border-0 text-xs">
+                <div key={row.label} className="flex justify-between py-2 border-b border-[#F7F7F7] last:border-0">
                   <span className="text-[#111111]/50">{row.label}</span>
-                  <span className="font-medium text-right max-w-[60%]">{row.value}</span>
+                  <span className="font-medium text-right max-w-[55%]">{row.value}</span>
                 </div>
               ))}
             </div>
 
             <div className="bg-[#111111] p-5 text-white">
-              <p className="text-xs text-white/50 uppercase tracking-widest mb-3">Pricing</p>
+              <p className="text-xs text-white/50 uppercase tracking-widest mb-4">Pricing</p>
               <div className="flex flex-col gap-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-white/60">Unit cost</span>
-                  <span>&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
+                  <span className="text-white/60">Base price/piece</span>
+                  <span>&#8377;{(PRODUCT_PRICES[product] ?? 0).toLocaleString('en-IN')}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-white/60">Volume discount</span>
-                    <span>-{(discount * 100).toFixed(0)}%</span>
+                    <span className="text-white/60">Volume discount ({(discount * 100).toFixed(0)}%)</span>
+                    <span className="text-green-400">-&#8377;{((PRODUCT_PRICES[product] ?? 0) - discountedBase).toLocaleString('en-IN')}/pc</span>
                   </div>
                 )}
+                {rush && rushCharge > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Rush premium</span>
+                    <span>+&#8377;{rushCharge}/pc</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-medium border-t border-white/10 pt-2 mt-1">
+                  <span className="text-white/80">Price per piece</span>
+                  <span>&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
+                </div>
                 <div className="flex justify-between">
                   <span className="text-white/60">Subtotal</span>
                   <span>&#8377;{subtotal.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between border-t border-white/10 pt-2 mt-1">
                   <span className="text-white/60">GST (5%)</span>
                   <span>&#8377;{gst.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="flex justify-between text-base font-bold border-t border-white/20 pt-2 mt-1">
-                  <span>Total</span>
-                  <span>&#8377;{grandTotal.toLocaleString('en-IN')}</span>
+                <div className="flex justify-between text-base font-bold border-t border-white/20 pt-3 mt-1">
+                  <span>Total (incl. GST)</span>
+                  <span>&#8377;{total.toLocaleString('en-IN')}</span>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-white/20">
-                <div className="flex justify-between text-xs">
-                  <span className="text-white/50">Est. delivery</span>
-                  <span className="font-medium">{deliveryDate}</span>
-                </div>
-              </div>
+              <p className="text-xs text-white/30 mt-3">+ Shipping quoted separately by email</p>
             </div>
 
             <button type="button"
               disabled={!canProceedToShipping()}
               onClick={() => setScreen('shipping')}
               className={`w-full py-3.5 text-sm font-medium transition-colors ${
-                canProceedToShipping() ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
+                canProceedToShipping()
+                  ? 'bg-[#111111] text-white hover:bg-black'
+                  : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
               }`}>
               Next: Shipping details
             </button>
@@ -628,7 +698,7 @@ export default function ConfigureClient() {
     )
   }
 
-  // ── SHIPPING SCREEN ───────────────────────────────────────────
+  // ── SHIPPING ──────────────────────────────────────────────────
   if (screen === 'shipping') {
     return (
       <div className="max-w-3xl mx-auto px-6 py-16">
@@ -642,7 +712,9 @@ export default function ConfigureClient() {
 
         <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-2">Step 3 of 5</p>
         <h1 className="text-3xl font-bold tracking-tight mb-2">Shipping details</h1>
-        <p className="text-[#111111]/50 text-sm mb-10">Where should we deliver your order?</p>
+        <p className="text-[#111111]/50 text-sm mb-10">
+          Where should we deliver your order? Shipping charges will be quoted separately via email.
+        </p>
 
         <div className="flex flex-col gap-4 max-w-lg">
           <div className="flex flex-col gap-1.5">
@@ -676,11 +748,17 @@ export default function ConfigureClient() {
             </div>
           </div>
 
+          <div className="bg-[#F7F7F7] border border-[#E5E5E5] p-4 text-xs text-[#111111]/50 mt-2">
+            Shipping is paid by the client. We will email you the shipping charge before dispatching.
+          </div>
+
           <button type="button"
             disabled={!canProceedToReview()}
             onClick={() => setScreen('review')}
-            className={`w-full py-3.5 text-sm font-medium transition-colors mt-4 ${
-              canProceedToReview() ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
+            className={`w-full py-3.5 text-sm font-medium transition-colors mt-2 ${
+              canProceedToReview()
+                ? 'bg-[#111111] text-white hover:bg-black'
+                : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
             }`}>
             Next: Review &amp; pay
           </button>
@@ -689,7 +767,7 @@ export default function ConfigureClient() {
     )
   }
 
-  // ── REVIEW SCREEN ─────────────────────────────────────────────
+  // ── REVIEW ────────────────────────────────────────────────────
   if (screen === 'review') {
     return (
       <div className="max-w-3xl mx-auto px-6 py-16">
@@ -702,11 +780,13 @@ export default function ConfigureClient() {
         </button>
 
         <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-2">Step 4 of 5</p>
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Review your order</h1>
-        <p className="text-[#111111]/50 text-sm mb-10">Fill in your contact details and confirm everything looks right.</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Review &amp; pay</h1>
+        <p className="text-[#111111]/50 text-sm mb-10">
+          Fill in your contact details and confirm everything looks right before paying the reservation fee.
+        </p>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {/* Contact details */}
+          {/* Contact */}
           <div className="flex flex-col gap-4">
             <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest">Your details</p>
             <div className="grid grid-cols-2 gap-3">
@@ -750,7 +830,7 @@ export default function ConfigureClient() {
             </div>
           </div>
 
-          {/* Full order summary */}
+          {/* Full summary */}
           <div className="flex flex-col gap-4">
             <div className="border border-[#E5E5E5] p-5 text-xs">
               <p className="font-medium text-[#111111]/40 uppercase tracking-widest mb-4">Order details</p>
@@ -761,37 +841,64 @@ export default function ConfigureClient() {
                 { label: 'Placement', value: activePlacements.join(', ') },
                 { label: 'Neck label', value: neckLabel },
                 { label: 'Quantity', value: `${totalQty} pcs` },
-                { label: 'Ship to', value: `${shipping.address}, ${shipping.city} - ${shipping.pincode}` },
+                { label: 'Size breakdown', value: sizes.filter(s => sizeQty[s] > 0).map(s => `${s}:${sizeQty[s]}`).join(' · ') },
+                { label: 'Ship to', value: `${shipping.address}, ${shipping.city} ${shipping.pincode}` },
                 { label: 'Est. delivery', value: deliveryDate },
               ].map(row => (
                 <div key={row.label} className="flex justify-between py-2 border-b border-[#F7F7F7] last:border-0">
-                  <span className="text-[#111111]/50">{row.label}</span>
-                  <span className="font-medium text-right max-w-[55%]">{row.value}</span>
+                  <span className="text-[#111111]/50 shrink-0">{row.label}</span>
+                  <span className="font-medium text-right max-w-[55%] break-words">{row.value}</span>
                 </div>
               ))}
             </div>
 
             <div className="bg-[#111111] p-5 text-white text-sm">
-              <div className="flex justify-between mb-2">
-                <span className="text-white/60">Subtotal</span>
-                <span>&#8377;{subtotal.toLocaleString('en-IN')}</span>
+              <p className="text-xs text-white/50 uppercase tracking-widest mb-4">Pricing breakdown</p>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between">
+                  <span className="text-white/60">Base price/piece</span>
+                  <span>&#8377;{(PRODUCT_PRICES[product] ?? 0).toLocaleString('en-IN')}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Volume discount ({(discount * 100).toFixed(0)}%)</span>
+                    <span className="text-green-400">-&#8377;{((PRODUCT_PRICES[product] ?? 0) - discountedBase).toLocaleString('en-IN')}/pc</span>
+                  </div>
+                )}
+                {rush && rushCharge > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-white/60">Rush premium</span>
+                    <span>+&#8377;{rushCharge}/pc</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-medium border-t border-white/10 pt-2 mt-1">
+                  <span className="text-white/80">Price per piece</span>
+                  <span>&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/60">Subtotal ({totalQty} pcs)</span>
+                  <span>&#8377;{subtotal.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between border-t border-white/10 pt-2 mt-1">
+                  <span className="text-white/60">GST (5%)</span>
+                  <span>&#8377;{gst.toLocaleString('en-IN')}</span>
+                </div>
+                <div className="flex justify-between text-base font-bold border-t border-white/20 pt-3 mt-1">
+                  <span>Total (incl. GST)</span>
+                  <span>&#8377;{total.toLocaleString('en-IN')}</span>
+                </div>
               </div>
-              <div className="flex justify-between mb-2">
-                <span className="text-white/60">GST (5%)</span>
-                <span>&#8377;{gst.toLocaleString('en-IN')}</span>
-              </div>
-              <div className="flex justify-between font-bold text-base border-t border-white/20 pt-3 mt-2">
-                <span>Total</span>
-                <span>&#8377;{grandTotal.toLocaleString('en-IN')}</span>
+              <div className="mt-4 pt-4 border-t border-white/10 text-xs text-white/40 flex flex-col gap-1">
+                <span>Shipping quoted separately via email</span>
+                <span>Rs.499 reservation deducted from final invoice</span>
               </div>
             </div>
 
             <div className="bg-[#F7F7F7] border border-[#E5E5E5] p-4 text-xs text-[#111111]/60 leading-relaxed">
-              A <strong className="text-[#111111]">&#8377;499 reservation fee</strong> is charged now to confirm your slot. The balance (&#8377;{(grandTotal - 499).toLocaleString('en-IN')}) is invoiced separately via net banking and adjusted before production begins.
+              A <strong className="text-[#111111]">&#8377;499 reservation fee</strong> is charged now to confirm your production slot. The balance (&#8377;{Math.max(0, total - 499).toLocaleString('en-IN')}) is invoiced separately via net banking before production begins.
             </div>
 
-            <button
-              type="button"
+            <button type="button"
               disabled={!canSubmit() || submitting}
               onClick={async () => {
                 if (!canSubmit() || submitting) return
@@ -809,7 +916,7 @@ export default function ConfigureClient() {
                         placements: activePlacements.join(', '),
                         totalQty,
                         sizeBreakdown: sizes.filter(s => sizeQty[s] > 0).map(s => `${s}: ${sizeQty[s]}`).join(', '),
-                        estimatedTotal: `Rs.${grandTotal.toLocaleString('en-IN')} (incl. GST)`,
+                        estimatedTotal: `Rs.${total.toLocaleString('en-IN')} (incl. GST)`,
                       },
                     }),
                   })
@@ -817,10 +924,15 @@ export default function ConfigureClient() {
                   const txnid = 'MF' + Date.now()
                   const amount = '499.00'
                   const productinfo = `Reservation - ${product} x${totalQty} pcs`
+
                   const res = await fetch('/api/payu/hash', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ txnid, amount, productinfo, firstname: details.name.split(' ')[0], email: details.email }),
+                    body: JSON.stringify({
+                      txnid, amount, productinfo,
+                      firstname: details.name.split(' ')[0],
+                      email: details.email,
+                    }),
                   })
                   const { hash, key } = await res.json()
 
@@ -854,9 +966,10 @@ export default function ConfigureClient() {
                 }
               }}
               className={`w-full py-4 text-sm font-medium transition-colors ${
-                canSubmit() && !submitting ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
-              }`}
-            >
+                canSubmit() && !submitting
+                  ? 'bg-[#111111] text-white hover:bg-black'
+                  : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'
+              }`}>
               {submitting ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-[#111111]/20 border-t-[#111111]/60 rounded-full animate-spin" />

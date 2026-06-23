@@ -16,17 +16,17 @@ export default function Shop() {
         <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">Moist Foundry</p>
         <h1 className="text-5xl font-bold text-[#111111] leading-tight mb-4 tracking-tight">Shop</h1>
         <p className="text-[#111111]/50 max-w-lg text-lg">
-          Our own line. Designed and manufactured in-house. Small runs, no restocks.
+          Order samples of our products before placing a bulk order. All pieces are manufactured in-house.
         </p>
       </section>
 
       <section className="max-w-7xl mx-auto px-6 pb-12">
         <div className="border border-[#E5E5E5] px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 bg-white">
           <p className="text-sm text-[#111111]/60">
-            All pieces manufactured at our Greater Noida facility. Ships within 7 days.
+            All pieces manufactured at our Greater Noida facility. Ships within 24 hours.
           </p>
           <div className="flex gap-6 text-xs text-[#111111]/40 shrink-0">
-            <span>Free shipping above ₹2000</span>
+            <span>Free shipping</span>
             <span>Easy returns</span>
           </div>
         </div>
