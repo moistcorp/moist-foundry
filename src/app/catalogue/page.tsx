@@ -113,9 +113,13 @@ function ProductCard({ product: p }: { product: any }) {
     <Link href={`/catalogue/${p.slug}`}
       className="group bg-white flex flex-col hover:bg-[#F7F7F7] transition-colors">
       {p.image && (
-  <div className="w-full aspect-square overflow-hidden">
+  <div className="w-full aspect-square bg-[#F7F7F7] flex items-center justify-center overflow-hidden">
+  {p.image ? (
     <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-  </div>
+  ) : (
+    <span className="text-xs text-[#111111]/20 uppercase tracking-wide">Product image</span>
+  )}
+</div>
 )}
       <div className="p-5 flex flex-col gap-3">
         <div>

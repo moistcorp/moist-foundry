@@ -526,7 +526,7 @@ export default function ConfigureClient() {
                   <p className="text-sm font-semibold text-[#111111]">Rush order</p>
                   <p className="text-xs text-[#111111]/50 mt-0.5">
                     {rush
-                      ? `Delivery in ${RUSH_DELIVERY_DAYS} days · +&#8377;${getRushCharge(totalQty)}/pc`
+                      ? `Delivery in ${RUSH_DELIVERY_DAYS} days · ${getRushCharge(totalQty)}/pc`
                       : `Standard: ${DELIVERY_DAYS} days`}
                   </p>
                 </div>
@@ -749,7 +749,7 @@ export default function ConfigureClient() {
           </div>
 
           <div className="bg-[#F7F7F7] border border-[#E5E5E5] p-4 text-xs text-[#111111]/50 mt-2">
-            Shipping is paid by the client. We will email you the shipping charge before dispatching.
+            Shipping charges will be shared over email before dispatching.
           </div>
 
           <button type="button"
@@ -782,7 +782,7 @@ export default function ConfigureClient() {
         <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-2">Step 4 of 5</p>
         <h1 className="text-3xl font-bold tracking-tight mb-2">Review &amp; pay</h1>
         <p className="text-[#111111]/50 text-sm mb-10">
-          Fill in your contact details and confirm everything looks right before paying the reservation fee.
+          Fill in your contact details and confirm everything is correct before paying the reservation fee.
         </p>
 
         <div className="grid md:grid-cols-2 gap-8">

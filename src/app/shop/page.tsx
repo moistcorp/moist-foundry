@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { products } from '@/lib/products'
 import type { Metadata } from 'next'
 import { generateMeta } from '@/lib/seo'
+import { PRODUCT_PRICES } from '@/lib/pricing'
 
 export const metadata: Metadata = generateMeta({
   title: 'Shop',
