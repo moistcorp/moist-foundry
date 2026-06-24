@@ -1,23 +1,90 @@
+'use client'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function PaymentFailure() {
+export default function PaymentFailurePage() {
+  const searchParams = useSearchParams()
+  const txnid = searchParams.get('txnid') ?? ''
+  const error = searchParams.get('error') ?? ''
+
+  // Read order info from localStorage for retry
+  let retryUrl = '/configure'
+  let name = ''
+  try {
+    const raw = localStorage.getItem('mf_pending_order')
+    if (raw) {
+      const o = JSON.parse(raw)
+      name = o.name ?? ''
+    }
+    // Restore to review screen so they can retry
+    const progress = localStorage.getItem('mf_configurator_v2')
+    if (progress) {
+      const p = JSON.parse(progress)
+      p.screen = 'review'
+      localStorage.setItem('mf_configurator_v2', JSON.stringify(p))
+    }
+  } catch {/* ignore */}
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6">
-      <div className="max-w-md text-center">
+      <div className="max-w-md w-full text-center">
         <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
           </svg>
         </div>
+
         <h1 className="text-3xl font-bold text-[#111111] mb-3 tracking-tight">Payment failed</h1>
-        <p className="text-[#111111]/60 mb-8 text-sm">Something went wrong with your payment. Your cart has been saved — please try again.</p>
-        <div className="flex gap-3 justify-center">
-          <Link href="/cart" className="bg-[#111111] text-white px-6 py-3 text-sm font-medium hover:bg-black transition-colors">
-            Back to cart
+        <p className="text-[#111111]/60 mb-6 text-sm">
+          {name ? `Hi ${name.split(' ')[0]}, we` : 'We'} could not complete your payment.
+          {error && <span className="block mt-1 text-xs text-red-500">{error}</span>}
+        </p>
+
+        {txnid && (
+          <p className="text-xs text-[#111111]/40 mb-6">
+            Transaction reference: <span className="font-mono">{txnid}</span>
+          </p>
+        )}
+
+        {/* Important notice */}
+        <div className="bg-amber-50 border border-amber-200 p-4 text-xs text-amber-800 text-left leading-relaxed mb-6">
+          <p className="font-semibold mb-1">Important — please read before retrying</p>
+          <p>
+            If an amount was deducted from your bank account, <strong>do not retry payment</strong>.
+            Bank transactions can take up to <strong>6 hours</strong> to sync with our records.
+            If the deduction doesn&apos;t reflect as a successful booking within 6 hours, contact us at{' '}
+            <a href="mailto:hello@moistfoundry.com" className="underline font-medium">hello@moistfoundry.com</a>
+            {' '}and we will resolve it.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <Link
+            href={retryUrl}
+            className="w-full bg-[#111111] text-white py-3.5 text-sm font-medium hover:bg-black transition-colors flex items-center justify-center gap-2"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M23 4v6h-6" />
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" />
+            </svg>
+            Retry payment
           </Link>
-          <Link href="/shop" className="border border-[#111111] text-[#111111] px-6 py-3 text-sm font-medium hover:bg-[#111111] hover:text-white transition-colors">
-            Continue shopping
+
+          <Link
+            href="/"
+            className="w-full border border-[#E5E5E5] text-[#111111] py-3.5 text-sm font-medium hover:border-[#111111] transition-colors flex items-center justify-center"
+          >
+            Back to home
           </Link>
+
+          <a
+            href="mailto:hello@moistfoundry.com"
+            className="text-xs text-[#111111]/40 hover:text-[#111111] transition-colors mt-1"
+          >
+            Need help? Email us →
+          </a>
         </div>
       </div>
     </div>

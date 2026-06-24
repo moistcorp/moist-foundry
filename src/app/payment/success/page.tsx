@@ -1,28 +1,111 @@
 'use client'
-import { useEffect } from 'react'
-import { useCartStore } from '@/lib/store'
+import { useEffect, useState, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function PaymentSuccess() {
-  const clearCart = useCartStore(s => s.clearCart)
+export default function PaymentSuccessPage() {
+  const searchParams = useSearchParams()
+  const [emailSent, setEmailSent] = useState(false)
+  const hasSent = useRef(false)
 
   useEffect(() => {
-    clearCart()
-  }, [clearCart])
+    if (hasSent.current) return
+    hasSent.current = true
+
+    // Send confirmation email now that payment is confirmed
+    try {
+      const raw = localStorage.getItem('mf_pending_order')
+      if (raw) {
+        const order = JSON.parse(raw)
+        fetch('/api/send-confirmation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: order.name,
+            email: order.email,
+            type: 'configure',
+            orderDetails: {
+              product: order.product,
+              color: order.color,
+              technique: order.technique,
+              placements: order.placements,
+              neckLabel: order.neckLabel,
+              totalQty: order.totalQty,
+              sizeBreakdown: order.sizeBreakdown,
+              estimatedTotal: order.estimatedTotal,
+              shippingAddress: order.shipping
+                ? `${order.shipping.addressLine1}, ${order.shipping.city}, ${order.shipping.state} ${order.shipping.pincode}`
+                : '',
+            },
+          }),
+        })
+          .then(() => {
+            setEmailSent(true)
+            // Clear pending order and configurator progress
+            localStorage.removeItem('mf_pending_order')
+            localStorage.removeItem('mf_configurator_v2')
+          })
+          .catch(err => console.error('Email send failed:', err))
+      }
+    } catch (err) {
+      console.error('Could not retrieve order from storage:', err)
+    }
+  }, [])
+
+  // Try to get name/email from stored order for display
+  let name = ''
+  let email = ''
+  let txnid = searchParams.get('txnid') ?? ''
+  try {
+    const raw = localStorage.getItem('mf_pending_order')
+    if (raw) {
+      const o = JSON.parse(raw)
+      name = o.name ?? ''
+      email = o.email ?? ''
+      txnid = o.txnid ?? txnid
+    }
+  } catch {/* ignore */}
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-6">
-      <div className="max-w-md text-center">
+      <div className="max-w-md w-full text-center">
         <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
-            <polyline points="20 6 9 17 4 12"/>
+            <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
+
         <h1 className="text-3xl font-bold text-[#111111] mb-3 tracking-tight">Payment successful</h1>
-        <p className="text-[#111111]/60 mb-2 text-sm">Your order has been placed. You will receive a confirmation email shortly.</p>
-        <p className="text-[#111111]/40 text-xs mb-8">Ships within 7 days</p>
-        <Link href="/shop" className="inline-block bg-[#111111] text-white px-6 py-3 text-sm font-medium hover:bg-black transition-colors">
-          Continue shopping
+        <p className="text-[#111111]/60 mb-2 text-sm">
+          {name ? `Thanks ${name.split(' ')[0]}!` : 'Thank you!'} Your production slot has been reserved.
+        </p>
+
+        {email && (
+          <p className="text-sm mb-1">
+            Confirmation sent to <span className="font-medium text-[#111111]">{email}</span>
+          </p>
+        )}
+
+        {txnid && (
+          <p className="text-xs text-[#111111]/40 mt-2 mb-6">
+            Transaction ID: <span className="font-mono">{txnid}</span>
+          </p>
+        )}
+
+        <div className="bg-[#F7F7F7] border border-[#E5E5E5] p-5 text-xs text-left text-[#111111]/60 leading-relaxed mb-8">
+          <p className="font-medium text-[#111111] mb-2">What happens next</p>
+          <ul className="flex flex-col gap-1.5">
+            <li>· Our team will review your order and send a proforma invoice within 24 hours</li>
+            <li>· The ₹499 reservation fee will be deducted from your final invoice</li>
+            <li>· Production begins after balance payment is received</li>
+          </ul>
+        </div>
+
+        <Link
+          href="/"
+          className="inline-block bg-[#111111] text-white px-8 py-3 text-sm font-medium hover:bg-black transition-colors"
+        >
+          Back to home
         </Link>
       </div>
     </div>
