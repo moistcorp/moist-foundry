@@ -5,6 +5,7 @@ export type Product = {
   slug: string
   name: string
   pricingKey: string
+  icon: string
   category: string
   description: string
   gsm: number
@@ -22,6 +23,7 @@ export const products: Product[] = [
     slug: 'regular-fit-tee-200gsm',
     name: 'Regular Fit T-Shirt',
     pricingKey: 'Regular Fit Tee (200 GSM)',
+    icon: '/icons/tee.png',
     category: 'T-Shirts',
     description: '200 GSM classic regular fit tee. Clean silhouette, ideal for everyday branding and bulk orders.',
     gsm: 200,
@@ -37,6 +39,7 @@ export const products: Product[] = [
     slug: 'boxy-fit-tee-200gsm',
     name: 'Boxy Fit T-Shirt',
     pricingKey: 'Boxy Fit Tee (200 GSM)',
+    icon: '/icons/tee.png',
     category: 'T-Shirts',
     description: '200 GSM boxy fit tee. Dropped shoulders, relaxed body. Ideal for lifestyle and streetwear branding.',
     gsm: 200,
@@ -52,6 +55,7 @@ export const products: Product[] = [
     slug: 'regular-fit-tee-260gsm',
     name: 'Regular Fit Heavyweight T-Shirt',
     pricingKey: 'Regular Fit Tee (260 GSM)',
+    icon: '/icons/tee.png',
     category: 'T-Shirts',
     description: '260 GSM heavyweight regular fit tee. Structured feel, premium drape.',
     gsm: 260,
@@ -67,6 +71,7 @@ export const products: Product[] = [
     slug: 'boxy-fit-tee-260gsm',
     name: 'Boxy Fit Heavyweight T-Shirt',
     pricingKey: 'Boxy Fit Tee (260 GSM)',
+    icon: '/icons/tee.png',
     category: 'T-Shirts',
     description: '260 GSM heavyweight boxy fit tee. Maximum structure, premium weight.',
     gsm: 260,
@@ -82,6 +87,7 @@ export const products: Product[] = [
     slug: 'longsleeve-tee-260gsm',
     name: 'Longsleeve Tee',
     pricingKey: 'Longsleeve Tee (260 GSM)',
+    icon: '/icons/longsleeve.png',
     category: 'Longsleeve',
     description: '260 GSM long sleeve tee. Regular fit, clean finish.',
     gsm: 260,
@@ -96,6 +102,7 @@ export const products: Product[] = [
     slug: 'canvas-tote-bag',
     name: 'Canvas Tote Bag',
     pricingKey: 'Canvas Tote Bag',
+    icon: '/icons/totebag.png',
     category: 'Accessories',
     description: '12oz natural canvas tote. Reinforced handles, gusset base.',
     gsm: 340,
@@ -110,6 +117,7 @@ export const products: Product[] = [
     slug: 'regular-fit-sweatshirt-320gsm',
     name: 'Regular Fit Sweatshirt',
     pricingKey: 'Regular Fit Sweatshirt (320 GSM)',
+    icon: '/icons/sweatshirt.png',
     category: 'Sweatshirts',
     description: '320 GSM crewneck sweatshirt in regular fit.',
     gsm: 320,
@@ -120,12 +128,12 @@ export const products: Product[] = [
     price: PRODUCT_PRICES['Regular Fit Sweatshirt (320 GSM)'],
     image: '/products/regular-fit-sweatshirt-320gsm.jpg',
   },
-
   {
     id: 9,
     slug: 'regular-fit-hoodie-320gsm',
     name: 'Regular Fit Hoodie',
     pricingKey: 'Regular Fit Hoodie (320 GSM)',
+    icon: '/icons/hoodie.png',
     category: 'Hoodies',
     description: '320 GSM pullover hoodie in regular fit. Kangaroo pocket, structured hood.',
     gsm: 320,
@@ -141,6 +149,7 @@ export const products: Product[] = [
     slug: 'boxy-fit-hoodie-320gsm',
     name: 'Boxy Fit Hoodie',
     pricingKey: 'Boxy Fit Hoodie (320 GSM)',
+    icon: '/icons/hoodie.png',
     category: 'Hoodies',
     description: '320 GSM pullover hoodie in boxy fit. Oversized hood, dropped shoulders.',
     gsm: 320,
@@ -151,7 +160,6 @@ export const products: Product[] = [
     price: PRODUCT_PRICES['Boxy Fit Hoodie (320 GSM)'],
     image: '/products/boxy-fit-hoodie-320gsm.jpg',
   },
-  
 ]
 
 export const categories = ['T-Shirts', 'Longsleeve', 'Sweatshirts', 'Hoodies', 'Accessories']

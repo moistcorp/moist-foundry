@@ -14,7 +14,7 @@ import {
 } from '@/lib/pricing'
 import { products } from '@/lib/products'
 
-const estimatorProducts = products.map(p => ({ name: p.pricingKey, base: p.price }))
+const estimatorProducts = products.map(p => ({ name: p.pricingKey, base: p.price, icon: p.icon, description: p.description }))
 
 const industries = [
   { name: 'Hotels & Restaurants', desc: 'Staff uniforms, guest amenities, branded F&B merchandise.', image: '/industries/hotels-restaurants.jpg' },
@@ -29,6 +29,9 @@ export default function HomeClient() {
   const [qty, setQty] = useState(50)
   const [selected, setSelected] = useState(estimatorProducts[0].name)
   const [rush, setRush] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const selectedProduct = estimatorProducts.find(p => p.name === selected) ?? estimatorProducts[0]
 
   const { discount, discountedBase, rushCharge, pricePerPiece, subtotal, gst, total } = calcOrder(selected, qty, rush)
   const deliveryDays = rush ? RUSH_DELIVERY_DAYS : DELIVERY_DAYS
@@ -46,7 +49,7 @@ export default function HomeClient() {
             Custom merch<br />for your<br />business
           </h1>
           <p className="text-base text-[#111111]/50 max-w-sm mb-10 leading-relaxed">
-            From design to delivery. Premium custom apparel made in India. Configure online, reserve your slot, receive in {DELIVERY_DAYS} days.
+            From design to delivery: premium custom merch, made in India. Create, customise and place your order in just a few simple steps.
           </p>
           <div className="flex gap-6 mb-10">
             <div>
@@ -157,17 +160,49 @@ export default function HomeClient() {
                 {/* Product picker */}
                 <div>
                   <p className="text-xs font-medium text-[#111111]/40 uppercase tracking-widest mb-3">Product</p>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {estimatorProducts.map(p => (
-                      <button key={p.name} type="button" onClick={() => setSelected(p.name)}
-                        className={`px-3 py-2 text-xs text-left border transition-colors ${
-                          selected === p.name
-                            ? 'bg-[#111111] text-white border-[#111111]'
-                            : 'border-[#E5E5E5] bg-white text-[#111111]/60 hover:border-[#111111] hover:text-[#111111]'
-                        }`}>
-                        {p.name}
-                      </button>
-                    ))}
+                  <div className="border border-[#E5E5E5] bg-white">
+                    {/* Selected — always visible */}
+                    <button
+                      type="button"
+                      onClick={() => setDropdownOpen(!dropdownOpen)}
+                      className="w-full flex items-center gap-4 px-4 py-4 bg-[#F7F7F7] hover:bg-[#F0F0F0] transition-colors text-left"
+                    >
+                      <div className="w-12 h-12 bg-white border border-[#E5E5E5] flex items-center justify-center shrink-0">
+                        <Image src={selectedProduct.icon} alt={selectedProduct.name} width={36} height={36} className="object-contain" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#111111] leading-snug">{selectedProduct.name}</p>
+                        <p className="text-xs text-[#111111]/50 mt-0.5 line-clamp-1">{selectedProduct.description}</p>
+                      </div>
+                      <svg
+                        className={`w-4 h-4 text-[#111111]/40 shrink-0 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Options */}
+                    {dropdownOpen && (
+                      <div className="border-t border-[#E5E5E5]">
+                        {estimatorProducts.filter(p => p.name !== selected).map((p, i, arr) => (
+                          <button
+                            key={p.name}
+                            type="button"
+                            onClick={() => { setSelected(p.name); setDropdownOpen(false) }}
+                            className={`w-full flex items-center gap-4 px-4 py-3.5 hover:bg-[#F7F7F7] transition-colors text-left ${i < arr.length - 1 ? 'border-b border-[#E5E5E5]' : ''}`}
+                          >
+                            <div className="w-10 h-10 bg-[#F7F7F7] border border-[#E5E5E5] flex items-center justify-center shrink-0">
+                              <Image src={p.icon} alt={p.name} width={30} height={30} className="object-contain" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-[#111111] leading-snug">{p.name}</p>
+                              <p className="text-xs text-[#111111]/40 mt-0.5 line-clamp-1">{p.description}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
