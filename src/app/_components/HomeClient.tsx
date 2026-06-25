@@ -12,8 +12,9 @@ import {
   DELIVERY_DAYS,
   RUSH_DELIVERY_DAYS,
 } from '@/lib/pricing'
+import { products } from '@/lib/products'
 
-const estimatorProducts = Object.entries(PRODUCT_PRICES).map(([name, base]) => ({ name, base }))
+const estimatorProducts = products.map(p => ({ name: p.pricingKey, base: p.price }))
 
 const industries = [
   { name: 'Hotels & Restaurants', desc: 'Staff uniforms, guest amenities, branded F&B merchandise.', image: null },
@@ -92,7 +93,7 @@ export default function HomeClient() {
             {[
               { label: 'T-Shirts & Tees', sub: '200 & 260 GSM · 2 fits' },
               { label: 'Sweatshirts & Hoodies', sub: '320 GSM · 2 fits' },
-              { label: 'Bottoms & Accessories', sub: 'Shorts, totes' },
+              { label: 'Bottoms & Accessories', sub: 'Canvas totes' },
               { label: 'Screen Print, DTG, Embroidery', sub: '3 print techniques' },
             ].map(item => (
               <div key={item.label} className="px-6 py-4 first:pl-0">

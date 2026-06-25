@@ -11,8 +11,9 @@ import {
   DELIVERY_DAYS,
   RUSH_DELIVERY_DAYS,
 } from '@/lib/pricing'
+import { products } from '@/lib/products'
 
-const productList = Object.entries(PRODUCT_PRICES).map(([name, base]) => ({ name, base }))
+const productList = products.map(p => ({ name: p.pricingKey, base: p.price }))
 
 export default function PricingClient() {
   const [qty, setQty] = useState<number>(50)

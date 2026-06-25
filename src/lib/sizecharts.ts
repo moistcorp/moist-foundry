@@ -57,17 +57,6 @@ export const SIZE_CHARTS: Record<string, SizeChart> = {
       { size: 'XXL',chest: '46"', length: '30"', shoulder: '22"' },
     ],
   },
-  'boxy-sweatshirt': {
-    note: 'All measurements in inches. Boxy fit — size down if between sizes.',
-    sizes: [
-      { size: 'XS', chest: '40"', length: '26"', shoulder: '20"' },
-      { size: 'S',  chest: '42"', length: '27"', shoulder: '21"' },
-      { size: 'M',  chest: '44"', length: '28"', shoulder: '22"' },
-      { size: 'L',  chest: '46"', length: '29"', shoulder: '23"' },
-      { size: 'XL', chest: '48"', length: '30"', shoulder: '24"' },
-      { size: 'XXL',chest: '50"', length: '31"', shoulder: '25"' },
-    ],
-  },
   'regular-hoodie': {
     note: 'All measurements in inches. Garment laid flat.',
     sizes: [
@@ -90,17 +79,7 @@ export const SIZE_CHARTS: Record<string, SizeChart> = {
       { size: 'XXL',chest: '52"', length: '32"', shoulder: '26"' },
     ],
   },
-  'shorts': {
-    note: 'All measurements in inches. Waist measured flat, double for full circumference.',
-    sizes: [
-      { size: 'XS', chest: '26"', length: '17"',   waist: '26"', inseam: '7"' },
-      { size: 'S',  chest: '28"', length: '17.5"',  waist: '28"', inseam: '7"' },
-      { size: 'M',  chest: '30"', length: '18"',    waist: '30"', inseam: '7"' },
-      { size: 'L',  chest: '32"', length: '18.5"',  waist: '32"', inseam: '7"' },
-      { size: 'XL', chest: '34"', length: '19"',    waist: '34"', inseam: '7"' },
-      { size: 'XXL',chest: '36"', length: '19.5"',  waist: '36"', inseam: '7"' },
-    ],
-  },
+
   'tote': {
     note: 'One size. All measurements in cm.',
     sizes: [
@@ -117,10 +96,8 @@ export const PRODUCT_SIZE_CHART_MAP: Record<string, string> = {
   'boxy-fit-tee-260gsm':          'boxy-tee',
   'longsleeve-tee-260gsm':        'longsleeve',
   'regular-fit-sweatshirt-320gsm':'regular-sweatshirt',
-  'boxy-fit-sweatshirt-320gsm':   'boxy-sweatshirt',
   'regular-fit-hoodie-320gsm':    'regular-hoodie',
   'boxy-fit-hoodie-320gsm':       'boxy-hoodie',
-  'regular-fit-shorts':           'shorts',
   'canvas-tote-bag':              'tote',
 }
 
