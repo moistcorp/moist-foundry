@@ -75,11 +75,7 @@ export default function HomeClient() {
 
         <div className="relative bg-[#F7F7F7] flex items-center justify-center min-h-64 lg:min-h-full overflow-hidden">
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-xs text-[#111111]/20 uppercase tracking-widest mb-2">Hero image</p>
-              <p className="text-xs text-[#111111]/15">Drop a garment photo here</p>
-              <p className="text-xs text-[#111111]/15">public/hero.jpg</p>
-            </div>
+            <Image src="/hero.jpg" alt="Hero image" width={800} height={600} className="object-cover" />
           </div>
           <div className="absolute bottom-8 left-8 bg-white border border-[#E5E5E5] px-5 py-4 shadow-sm">
             <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-1">Starting from</p>
