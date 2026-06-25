@@ -17,12 +17,12 @@ import { products } from '@/lib/products'
 const estimatorProducts = products.map(p => ({ name: p.pricingKey, base: p.price }))
 
 const industries = [
-  { name: 'Hotels & Restaurants', desc: 'Staff uniforms, guest amenities, branded F&B merchandise.', image: null },
-  { name: 'Music & Events', desc: 'Artist merch, crew wear, event uniforms and giveaways.', image: null },
-  { name: 'Sports & Fitness', desc: 'Team kits, gym wear, performance and training apparel.', image: null },
-  { name: 'Arts & Culture', desc: 'Gallery merch, cultural institution apparel, limited editions.', image: null },
-  { name: 'Creative Studios', desc: 'Agency merch, studio wear, client gifting and onboarding kits.', image: null },
-  { name: 'Companies & Startups', desc: 'Employee swag, brand merchandise, conference and event kits.', image: null },
+  { name: 'Hotels & Restaurants', desc: 'Staff uniforms, guest amenities, branded F&B merchandise.', image: '/industries/hotels-restaurants.jpg' },
+  { name: 'Music & Events', desc: 'Artist merch, crew wear, event uniforms and giveaways.', image: '/industries/music-events.jpg' },
+  { name: 'Sports & Fitness', desc: 'Team kits, gym wear, performance and training apparel.', image: '/industries/sports-fitness.jpg' },
+  { name: 'Arts & Culture', desc: 'Gallery merch, cultural institution apparel, limited editions.', image: '/industries/arts-culture.jpg' },
+  { name: 'Creative Studios', desc: 'Agency merch, studio wear, client gifting and onboarding kits.', image: '/industries/creative-studios.jpg' },
+  { name: 'Companies & Startups', desc: 'Employee swag, brand merchandise, conference and event kits.', image: '/industries/companies-startups.jpg' },
 ]
 
 export default function HomeClient() {
