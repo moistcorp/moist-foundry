@@ -5,6 +5,9 @@ export type CaseStudy = {
   title: string
   excerpt: string
   coverImage: string | null
+  product: string
+  color: string
+  printMethod: string
   date: string
   deliverables: string[]
   quantity: number
@@ -31,7 +34,10 @@ export const caseStudies: CaseStudy[] = [
     industry: 'Hotels & Restaurants',
     title: 'Staff uniforms that feel as good as the food',
     excerpt: 'Bistro 57 needed 120 custom polo shirts for front-of-house staff across two locations. We delivered in 28 days.',
-    coverImage: null,
+    coverImage: '/work/bistro57/cover.jpg',
+    product: 'Custom polo shirts',
+    color: 'White and Charcoal',
+    printMethod: 'Embroidery',
     date: 'March 2025',
     deliverables: ['Custom polo shirts', 'Embroidered logo', 'Two colorways'],
     quantity: 120,
@@ -68,7 +74,10 @@ export const caseStudies: CaseStudy[] = [
     industry: 'Music & Events',
     title: 'Festival merch that sold out in two days',
     excerpt: 'Soundwave needed 300 pieces of merch across three designs for their annual music festival. We turned it around in 22 days.',
-    coverImage: null,
+    coverImage: '/work/soundwave/cover.jpg',
+    product: 'Custom tees and tote bags',
+    color: 'White and Charcoal',
+    printMethod: 'Screen Print',
     date: 'January 2025',
     deliverables: ['Oversized tees', 'Tote bags', 'Screen print', 'Three designs'],
     quantity: 300,
@@ -100,8 +109,11 @@ export const caseStudies: CaseStudy[] = [
     industry: 'Sports & Fitness',
     title: 'Gym kit built for performance and brand',
     excerpt: 'Northstar needed matching shorts and tees for 80 members joining their new flagship location.',
-    coverImage: null,
+    coverImage: '/work/northstar/cover.jpg',
     date: 'November 2024',
+    product: 'Gym shorts and t-shirts',
+    color: 'White and Charcoal',
+    printMethod: 'Screen Print',
     deliverables: ['Gym shorts', 'T-shirts', 'Screen print', 'Member welcome kit'],
     quantity: 160,
     turnaround: '30 days',
@@ -127,8 +139,11 @@ export const caseStudies: CaseStudy[] = [
     industry: 'Creative Studios',
     title: 'Studio merch that doubles as brand marketing',
     excerpt: 'House of Craft wanted merch their team would actually wear — not branded corporate gifts. We built them a small drop.',
-    coverImage: null,
+    coverImage: '/work/houseofcraft/cover.jpg',
     date: 'September 2024',
+    product: 'Custom hoodies and tote bags',
+    color: 'Off-White',
+    printMethod: 'Screen Print and Embroidery',
     deliverables: ['Boxy hoodies', 'Tote bags', 'Screen print', 'Embroidery'],
     quantity: 75,
     turnaround: '32 days',

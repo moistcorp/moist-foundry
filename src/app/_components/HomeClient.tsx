@@ -1,4 +1,6 @@
 'use client'
+import HomepageCaseStudies from '@/components/home/HomepageCaseStudies'
+import TrustedBy from '@/components/home/TrustedBy'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -17,12 +19,12 @@ import { products } from '@/lib/products'
 const estimatorProducts = products.map(p => ({ name: p.pricingKey, base: p.price, icon: p.icon, description: p.description }))
 
 const industries = [
-  { name: 'Hotels & Restaurants', desc: 'Staff uniforms, guest amenities, branded F&B merchandise.', image: '/industries/hotels-restaurants.jpg' },
-  { name: 'Music & Events', desc: 'Artist merch, crew wear, event uniforms and giveaways.', image: '/industries/music-events.jpg' },
-  { name: 'Sports & Fitness', desc: 'Team kits, gym wear, performance and training apparel.', image: '/industries/sports-fitness.jpg' },
-  { name: 'Arts & Culture', desc: 'Gallery merch, cultural institution apparel, limited editions.', image: '/industries/arts-culture.jpg' },
-  { name: 'Creative Studios', desc: 'Agency merch, studio wear, client gifting and onboarding kits.', image: '/industries/creative-studios.jpg' },
-  { name: 'Companies & Startups', desc: 'Employee swag, brand merchandise, conference and event kits.', image: '/industries/companies-startups.jpg' },
+  { name: 'Hotels & Restaurants', desc: 'Merchandise designed for hospitality brands, from staff apparel to retail collections and guest experiences.', image: '/industries/hotels-restaurants.jpg' },
+  { name: 'Music & Events', desc: 'Merch created for releases, tours, and live events, from artist collections to large-scale drops.', image: '/industries/music-events.jpg' },
+  { name: 'Sports & Fitness', desc: 'Merchandise for teams, clubs, and active brands, built for both function and identity.', image: '/industries/sports-fitness.jpg' },
+  { name: 'Arts & Culture', desc: 'Merchandise developed for exhibitions, institutions, and artists, from limited releases to curated retail collections.', image: '/industries/arts-culture.jpg' },
+  { name: 'Creative Studios', desc: 'Design-led merchandise for studios and agencies, built to extend brand systems into physical products.', image: '/industries/creative-studios.jpg' },
+  { name: 'Companies & Startups', desc: 'Custom merchandise for teams and organisations, from onboarding kits to team apparel and client gifting.', image: '/industries/companies-startups.jpg' },
 ]
 
 export default function HomeClient() {
@@ -58,7 +60,7 @@ export default function HomeClient() {
             </div>
             <div className="w-px bg-[#E5E5E5]" />
             <div>
-              <p className="text-2xl font-bold text-[#111111]">{DELIVERY_DAYS}</p>
+              <p className="text-2xl font-bold text-[#111111]">{RUSH_DELIVERY_DAYS}</p>
               <p className="text-xs text-[#111111]/40 uppercase tracking-wide">Day delivery</p>
             </div>
             <div className="w-px bg-[#E5E5E5]" />
@@ -96,8 +98,8 @@ export default function HomeClient() {
             {[
               { label: 'T-Shirts & Tees', sub: '200 & 260 GSM · 2 fits' },
               { label: 'Sweatshirts & Hoodies', sub: '320 GSM · 2 fits' },
-              { label: 'Bottoms & Accessories', sub: 'Canvas totes' },
-              { label: 'Screen Print, DTG, Embroidery', sub: '3 print techniques' },
+              { label: 'Accessories', sub: 'Canvas totes' },
+              { label: 'Screen Print, DTG, DTF, Embroidery, Heat Transfer', sub: '5 print techniques' },
             ].map(item => (
               <div key={item.label} className="px-6 py-4 first:pl-0">
                 <p className="text-sm font-semibold text-[#111111] leading-snug">{item.label}</p>
@@ -114,7 +116,7 @@ export default function HomeClient() {
           <div>
             <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">The process</p>
             <h2 className="text-4xl font-bold mb-6 tracking-tight leading-tight">
-              From brief to<br />delivery in {DELIVERY_DAYS} days
+              From brief to<br />delivery in {RUSH_DELIVERY_DAYS} days
             </h2>
             <p className="text-[#111111]/50 text-sm leading-relaxed mb-8">
               Configure your order online in minutes. We review, produce, and ship with full visibility at every stage.
@@ -128,7 +130,7 @@ export default function HomeClient() {
               { num: '01', title: 'Configure online', desc: 'Choose product, color, upload artwork, pick print technique.' },
               { num: '02', title: 'Reserve your slot', desc: 'Pay Rs.499 to confirm. We send a proforma within 24 hours.' },
               { num: '03', title: 'We produce', desc: 'Manufacturing and QA at our Greater Noida facility.' },
-              { num: '04', title: 'Delivered to you', desc: `Packed and shipped. ${DELIVERY_DAYS}-day production timeline.` },
+              { num: '04', title: 'Delivered to you', desc: `Packed and shipped. ${RUSH_DELIVERY_DAYS}-day production timeline.` },
             ].map((s, i) => (
               <div key={s.num} className={`flex gap-5 px-6 py-5 ${i < 3 ? 'border-b border-[#E5E5E5]' : ''}`}>
                 <span className="text-xs font-bold text-[#111111]/20 shrink-0 pt-0.5">{s.num}</span>
@@ -142,8 +144,10 @@ export default function HomeClient() {
         </div>
       </section>
 
+<TrustedBy />
+
       {/* PRICING ESTIMATOR — full version matching pricing page */}
-      <section className="border-t border-[#E5E5E5] py-20 bg-[#F7F7F7]">
+      <section className="border-t border-[#E5E5E5] py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-16 items-start">
 
@@ -165,7 +169,7 @@ export default function HomeClient() {
                     <button
                       type="button"
                       onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className="w-full flex items-center gap-4 px-4 py-4 bg-[#F7F7F7] hover:bg-[#F0F0F0] transition-colors text-left"
+                      className="w-full flex items-center gap-4 px-4 py-4 bg-white hover:bg-[#F0F0F0] transition-colors text-left"
                     >
                       <div className="w-12 h-12 bg-white border border-[#E5E5E5] flex items-center justify-center shrink-0">
                         <Image src={selectedProduct.icon} alt={selectedProduct.name} width={36} height={36} className="object-contain" />
@@ -190,9 +194,9 @@ export default function HomeClient() {
                             key={p.name}
                             type="button"
                             onClick={() => { setSelected(p.name); setDropdownOpen(false) }}
-                            className={`w-full flex items-center gap-4 px-4 py-3.5 hover:bg-[#F7F7F7] transition-colors text-left ${i < arr.length - 1 ? 'border-b border-[#E5E5E5]' : ''}`}
+                            className={`w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white transition-colors text-left ${i < arr.length - 1 ? 'border-b border-[#E5E5E5]' : ''}`}
                           >
-                            <div className="w-10 h-10 bg-[#F7F7F7] border border-[#E5E5E5] flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 bg-white border border-[#E5E5E5] flex items-center justify-center shrink-0">
                               <Image src={p.icon} alt={p.name} width={30} height={30} className="object-contain" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -346,17 +350,19 @@ export default function HomeClient() {
         </div>
       </section>
 
+<HomepageCaseStudies />
+
       {/* INDUSTRIES */}
       <section className="max-w-7xl mx-auto px-6 py-24">
         <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">Who we work with</p>
-        <h2 className="text-4xl font-bold mb-3 tracking-tight">Built for these industries</h2>
+        <h2 className="text-4xl font-bold mb-3 tracking-tight">Premium merch for every industry</h2>
         <p className="text-[#111111]/50 text-sm mb-12 max-w-lg leading-relaxed">
-          From hotel uniforms to event merch. We serve businesses that take their visual identity seriously.
+          From hospitality to creative agencies, Foundry delivers premium branded merchandise tailored to different industries.
         </p>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E5E5E5]">
           {industries.map(i => (
             <div key={i.name} className="group bg-white flex flex-col hover:bg-[#F7F7F7] transition-colors">
-              <div className="w-full aspect-video bg-[#F7F7F7] flex items-center justify-center overflow-hidden">
+              <div className="w-full h-[420px] bg-[#F7F7F7] flex items-center justify-center overflow-hidden">
                 {i.image ? (
                   <img src={i.image} alt={i.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
