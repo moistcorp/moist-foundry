@@ -42,7 +42,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach', 'Iron on low heat'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Boxy Fit Tee (200 GSM)'],
-    image: '/products/regular-fit-tee-200gsm.jpg',
+    image: '/products/boxy-fit-tee-200gsm.jpg',
   },
   {
     id: 3,
@@ -112,20 +112,7 @@ export const products: Product[] = [
     price: PRODUCT_PRICES['Regular Fit Sweatshirt (320 GSM)'],
     image: '/products/regular-fit-sweatshirt-320gsm.jpg',
   },
-  {
-    id: 8,
-    slug: 'boxy-fit-sweatshirt-320gsm',
-    name: 'Boxy Fit Sweatshirt',
-    category: 'Sweatshirts',
-    description: '320 GSM crewneck sweatshirt in boxy fit.',
-    gsm: 320,
-    fits: ['Boxy'],
-    details: ['320 GSM 80/20 cotton-poly fleece', 'Boxy oversized fit', 'Drop shoulder', 'Crewneck collar', 'Brushed inner fleece'],
-    careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    price: PRODUCT_PRICES['Boxy Fit Sweatshirt (320 GSM)'],
-    image: '/products/boxy-fit-sweatshirt-320gsm.jpg',
-  },
+
   {
     id: 9,
     slug: 'regular-fit-hoodie-320gsm',
@@ -154,20 +141,7 @@ export const products: Product[] = [
     price: PRODUCT_PRICES['Boxy Fit Hoodie (320 GSM)'],
     image: '/products/boxy-fit-hoodie-320gsm.jpg',
   },
-  {
-    id: 11,
-    slug: 'regular-fit-shorts',
-    name: 'Regular Fit Shorts',
-    category: 'Bottoms',
-    description: '220 GSM cotton shorts in regular fit. Elastic waist with drawcord, side pockets.',
-    gsm: 220,
-    fits: ['Regular'],
-    details: ['220 GSM 100% combed cotton', 'Regular fit', '7" inseam', 'Elastic waist with drawcord', 'Two side pockets'],
-    careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach'],
-    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
-    price: PRODUCT_PRICES['Shorts (220 GSM)'],
-    image: '/products/regular-fit-shorts.jpg',
-  },
+  
 ]
 
-export const categories = ['T-Shirts', 'Longsleeve', 'Sweatshirts', 'Hoodies', 'Bottoms', 'Accessories']
+export const categories = ['T-Shirts', 'Longsleeve', 'Sweatshirts', 'Hoodies', 'Accessories']
