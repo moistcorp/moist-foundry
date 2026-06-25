@@ -28,7 +28,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach', 'Iron on low heat'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Regular Fit Tee (200 GSM)'],
-    image: null,
+    image: '/products/regular-fit-tee-200gsm.jpg',
   },
   {
     id: 2,
@@ -70,7 +70,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach', 'Iron on low heat'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Boxy Fit Tee (260 GSM)'],
-    image: null,
+    image: '/products/boxy-fit-tee-260gsm.jpg',
   },
   {
     id: 5,
@@ -83,7 +83,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Longsleeve Tee (260 GSM)'],
-    image: null,
+    image: '/products/longsleeve-tee-260gsm.jpg',
   },
   {
     id: 6,
@@ -96,7 +96,7 @@ export const products: Product[] = [
     careInstructions: ['Hand wash cold', 'Air dry', 'Do not machine wash', 'Iron on low'],
     sizes: ['One Size'],
     price: PRODUCT_PRICES['Canvas Tote Bag'],
-    image: null,
+    image: '/products/canvas-tote-bag.jpg',
   },
   {
     id: 7,
@@ -110,7 +110,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach', 'Iron on low heat'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Regular Fit Sweatshirt (320 GSM)'],
-    image: null,
+    image: '/products/regular-fit-sweatshirt-320gsm.jpg',
   },
   {
     id: 8,
@@ -124,7 +124,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Boxy Fit Sweatshirt (320 GSM)'],
-    image: null,
+    image: '/products/boxy-fit-sweatshirt-320gsm.jpg',
   },
   {
     id: 9,
@@ -138,7 +138,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach', 'Iron on low heat'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Regular Fit Hoodie (320 GSM)'],
-    image: null,
+    image: '/products/regular-fit-hoodie-320gsm.jpg',
   },
   {
     id: 10,
@@ -152,7 +152,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Boxy Fit Hoodie (320 GSM)'],
-    image: null,
+    image: '/products/boxy-fit-hoodie-320gsm.jpg',
   },
   {
     id: 11,
@@ -166,7 +166,7 @@ export const products: Product[] = [
     careInstructions: ['Machine wash cold', 'Tumble dry low', 'Do not bleach'],
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     price: PRODUCT_PRICES['Shorts (220 GSM)'],
-    image: null,
+    image: '/products/regular-fit-shorts.jpg',
   },
 ]
 
