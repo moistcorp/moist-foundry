@@ -1,6 +1,7 @@
 'use client'
 import HomepageCaseStudies from '@/components/home/HomepageCaseStudies'
 import TrustedBy from '@/components/home/TrustedBy'
+import WhyMoistFoundry from '@/app/_components/WhyMoistFoundry'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -143,6 +144,8 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+<WhyMoistFoundry />
 
 <TrustedBy />
 
