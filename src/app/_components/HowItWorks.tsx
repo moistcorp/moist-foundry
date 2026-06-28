@@ -9,19 +9,19 @@ const steps = [
   {
     number: '1',
     title: 'Select a product',
-    body: 'Choose from tees, hoodies, sweatshirts, longsleeves, and totes — all manufactured at our Greater Noida facility. Every blank is cut and sewn in-house.',
+    body: 'Made in India in the same factories as leading fashion brands, our garments and accessories have unmatched quality and fit.',
     image: '/images/how-it-works-1.jpg',
   },
   {
     number: '2',
     title: 'Customise it',
-    body: 'Pick your garment colour, choose a print or embroidery technique, upload your artwork, and set quantities per size. Our configurator walks you through every step.',
+    body: 'Explore the Foundry, a real-time merch platform that allows you to choose from +2500 colours, numerous embellishments and printing techniques. Top it off with your brands woven label.',
     image: '/images/how-it-works-2.jpg',
   },
   {
     number: '3',
     title: 'Place your order',
-    body: 'Review everything, confirm your details, and lock in your order with a reservation. Our team reviews it within 24 hours and your merch ships in 18–22 days.',
+    body: 'Review the order details and place your order. Our team will review it and given the OK, your new merch will arrive at your doorstep in 14 Days.',
     image: '/images/how-it-works-3.jpg',
   },
 ]
@@ -32,9 +32,10 @@ export default function HowItWorks() {
   const [isMobile, setIsMobile] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef<number>(Date.now())
-  const mobileScrollRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([])
+  const isUserScrolling = useRef(false)
 
-  // Detect mobile
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
@@ -67,114 +68,128 @@ export default function HowItWorks() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [])
 
-  // Sync mobile scroll when active changes via timer
   useEffect(() => {
-    const el = mobileScrollRef.current
-    if (!el || !isMobile) return
-    const cardWidth = el.offsetWidth * 0.82 + 16
-    el.scrollTo({ left: active * cardWidth, behavior: 'smooth' })
+    if (!isMobile || isUserScrolling.current) return
+    const card = cardRefs.current[active]
+    const container = scrollRef.current
+    if (!card || !container) return
+    container.scrollTo({ left: card.offsetLeft, behavior: 'smooth' })
   }, [active, isMobile])
 
-  const handleClick = (index: number) => {
-    setActive(index)
-    startTimer(index)
-  }
-
-  const handleMobileScroll = () => {
-    const el = mobileScrollRef.current
-    if (!el) return
-    const cardWidth = el.offsetWidth * 0.82 + 16
-    const index = Math.round(el.scrollLeft / cardWidth)
-    if (index !== active && index >= 0 && index < steps.length) {
-      setActive(index)
-      startTimer(index)
+  const handleScrollEnd = () => {
+    const container = scrollRef.current
+    if (!container) return
+    isUserScrolling.current = false
+    const scrollLeft = container.scrollLeft
+    let closest = 0
+    let minDist = Infinity
+    cardRefs.current.forEach((card, i) => {
+      if (!card) return
+      const dist = Math.abs(card.offsetLeft - scrollLeft)
+      if (dist < minDist) { minDist = dist; closest = i }
+    })
+    if (closest !== active) {
+      setActive(closest)
+      startTimer(closest)
     }
   }
 
   return (
     <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
-        <div className="mb-10 px-6">
-          <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">How it works</p>
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-            <h2 className="text-4xl font-bold text-[#111111] tracking-tight leading-tight">
-              Launch your merch<br />project today.
-            </h2>
-            <Link
-              href="/configure"
-              className="text-sm font-medium text-[#111111] underline underline-offset-4 hover:opacity-50 transition-opacity whitespace-nowrap"
-            >
-              Start designing →
-            </Link>
-          </div>
-        </div>
-
-        {/* MOBILE — horizontal scrolling cards */}
-        {isMobile && (
-          <div
-            ref={mobileScrollRef}
-            onScroll={handleMobileScroll}
-            style={{
-              display: 'flex',
-              gap: '16px',
-              overflowX: 'auto',
-              overflowY: 'hidden',
-              scrollSnapType: 'x mandatory',
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'none',
-              paddingLeft: '24px',
-              paddingRight: '24px',
-              paddingBottom: '16px',
-            }}
+      {/* Header — always inside max-w container */}
+      <div className="max-w-7xl mx-auto px-6 mb-10">
+        <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">How it works</p>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <h2 className="text-4xl font-bold text-[#111111] tracking-tight leading-tight">
+            Launch your merch<br />project today.
+          </h2>
+          <Link
+            href="/configure"
+            className="text-sm font-medium text-[#111111] underline underline-offset-4 hover:opacity-50 transition-opacity whitespace-nowrap"
           >
-            {steps.map((step, i) => (
-              <div
-                key={i}
-                style={{
-                  scrollSnapAlign: 'start',
-                  flexShrink: 0,
-                  width: '82vw',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '16px',
-                }}
-              >
-                {/* Text */}
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(17,17,17,0.4)' }}>{step.number}.</span>
-                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{step.title}</span>
-                  </div>
-                  <div style={{ height: '1px', background: '#E5E5E5', marginBottom: '12px', overflow: 'hidden' }}>
-                    {active === i && (
-                      <div style={{ height: '100%', background: '#111111', width: `${progress}%` }} />
-                    )}
-                  </div>
-                  <p style={{ fontSize: '14px', color: 'rgba(17,17,17,0.55)', lineHeight: 1.6 }}>{step.body}</p>
+            Start designing →
+          </Link>
+        </div>
+      </div>
+
+      {/* MOBILE — outside max-w, goes full viewport width */}
+      {isMobile && (
+        <div
+          ref={scrollRef}
+          onScrollCapture={() => { isUserScrolling.current = true }}
+          onScrollEnd={handleScrollEnd}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: '12px',
+            overflowX: 'auto',
+            overflowY: 'hidden',
+            scrollSnapType: 'x mandatory',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            paddingLeft: '24px',
+            paddingBottom: '16px',
+            width: '100vw',
+            scrollPaddingLeft: '24px',
+          }}
+        >
+          {steps.map((step, i) => (
+            <div
+              key={i}
+              ref={el => { cardRefs.current[i] = el }}
+              style={{
+                scrollSnapAlign: 'start',
+                flexShrink: 0,
+                width: '85vw',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+              }}
+            >
+              {/* Text */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(17,17,17,0.35)' }}>{step.number}.</span>
+                  <span style={{ fontSize: '19px', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{step.title}</span>
                 </div>
-                {/* Image */}
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '4/3', borderRadius: '16px', overflow: 'hidden', background: '#F7F7F7' }}>
-                  <Image
-                    src={step.image}
-                    alt={step.title}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    sizes="82vw"
-                    priority={i === 0}
-                  />
+                <div style={{ height: '1px', background: '#E5E5E5', marginBottom: '10px', overflow: 'hidden' }}>
+                  {active === i && (
+                    <div style={{ height: '100%', background: '#111111', width: `${progress}%` }} />
+                  )}
                 </div>
+                <p style={{ fontSize: '13px', color: 'rgba(17,17,17,0.55)', lineHeight: 1.6, margin: 0 }}>{step.body}</p>
               </div>
-            ))}
-            <div style={{ flexShrink: 0, width: '8px' }} />
-          </div>
-        )}
+              {/* Image */}
+              <div style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '4/3',
+                borderRadius: '14px',
+                overflow: 'hidden',
+                background: '#F7F7F7',
+                flexShrink: 0,
+              }}>
+                <Image
+                  src={step.image}
+                  alt={step.title}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  sizes="85vw"
+                  priority={i === 0}
+                />
+              </div>
+            </div>
+          ))}
+          {/* Trailing spacer so last card doesn't sit flush right */}
+          <div style={{ flexShrink: 0, width: '24px' }} />
+        </div>
+      )}
 
-        {/* DESKTOP — accordion left, image right */}
-        {!isMobile && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', alignItems: 'center', padding: '0 24px' }}>
-
+      {/* DESKTOP — inside max-w container */}
+      {!isMobile && (
+        <div className="max-w-7xl mx-auto px-6">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', alignItems: 'center' }}>
             <div>
               {steps.map((step, i) => {
                 const isActive = active === i
@@ -182,13 +197,11 @@ export default function HowItWorks() {
                   <button
                     key={i}
                     type="button"
-                    onClick={() => handleClick(i)}
+                    onClick={() => { setActive(i); startTimer(i) }}
                     style={{
                       width: '100%',
                       textAlign: 'left',
                       padding: '28px 0',
-                      borderBottom: '1px solid #E5E5E5',
-                      borderTop: i === 0 ? '1px solid #E5E5E5' : undefined,
                       display: 'block',
                       background: 'none',
                       cursor: 'pointer',
@@ -202,20 +215,13 @@ export default function HowItWorks() {
                         {step.title}
                       </span>
                     </div>
-                    <div style={{
-                      overflow: 'hidden',
-                      maxHeight: isActive ? '160px' : '0px',
-                      opacity: isActive ? 1 : 0,
-                      transition: 'max-height 0.3s ease, opacity 0.3s ease',
-                    }}>
+                    <div style={{ overflow: 'hidden', maxHeight: isActive ? '160px' : '0px', opacity: isActive ? 1 : 0, transition: 'max-height 0.3s ease, opacity 0.3s ease' }}>
                       <p style={{ fontSize: '14px', color: 'rgba(17,17,17,0.55)', lineHeight: 1.6, paddingLeft: '20px', paddingBottom: '16px' }}>
                         {step.body}
                       </p>
                     </div>
                     <div style={{ height: '1px', background: '#E5E5E5', marginTop: '4px', overflow: 'hidden' }}>
-                      {isActive && (
-                        <div style={{ height: '100%', background: '#111111', width: `${progress}%` }} />
-                      )}
+                      {isActive && <div style={{ height: '100%', background: '#111111', width: `${progress}%` }} />}
                     </div>
                   </button>
                 )
@@ -224,30 +230,15 @@ export default function HowItWorks() {
 
             <div style={{ position: 'relative', width: '100%', aspectRatio: '4/3', background: '#F7F7F7', border: '1px solid #E5E5E5', borderRadius: '16px', overflow: 'hidden' }}>
               {steps.map((step, i) => (
-                <div
-                  key={i}
-                  style={{
-                    position: 'absolute', inset: 0,
-                    opacity: active === i ? 1 : 0,
-                    transition: 'opacity 0.7s ease',
-                  }}
-                >
-                  <Image
-                    src={step.image}
-                    alt={step.title}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    sizes="50vw"
-                    priority={i === 0}
-                  />
+                <div key={i} style={{ position: 'absolute', inset: 0, opacity: active === i ? 1 : 0, transition: 'opacity 0.7s ease' }}>
+                  <Image src={step.image} alt={step.title} fill style={{ objectFit: 'cover' }} sizes="50vw" priority={i === 0} />
                 </div>
               ))}
             </div>
-
           </div>
-        )}
+        </div>
+      )}
 
-      </div>
     </section>
   )
 }
