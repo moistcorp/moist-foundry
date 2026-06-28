@@ -29,9 +29,18 @@ const steps = [
 export default function HowItWorks() {
   const [active, setActive] = useState(0)
   const [progress, setProgress] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef<number>(Date.now())
   const mobileScrollRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const startTimer = (index: number) => {
     if (intervalRef.current) clearInterval(intervalRef.current)
@@ -58,26 +67,25 @@ export default function HowItWorks() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [])
 
-  // Sync mobile scroll position when active changes via timer
+  // Sync mobile scroll when active changes via timer
   useEffect(() => {
     const el = mobileScrollRef.current
-    if (!el) return
-    const cardWidth = el.offsetWidth * 0.82 + 16 // 82vw card + gap
+    if (!el || !isMobile) return
+    const cardWidth = el.offsetWidth * 0.82 + 16
     el.scrollTo({ left: active * cardWidth, behavior: 'smooth' })
-  }, [active])
+  }, [active, isMobile])
 
   const handleClick = (index: number) => {
     setActive(index)
     startTimer(index)
   }
 
-  // Detect which card is in view on mobile scroll
   const handleMobileScroll = () => {
     const el = mobileScrollRef.current
     if (!el) return
     const cardWidth = el.offsetWidth * 0.82 + 16
     const index = Math.round(el.scrollLeft / cardWidth)
-    if (index !== active) {
+    if (index !== active && index >= 0 && index < steps.length) {
       setActive(index)
       startTimer(index)
     }
@@ -103,103 +111,142 @@ export default function HowItWorks() {
           </div>
         </div>
 
-        {/* ── MOBILE — horizontal scrolling cards ── */}
-        <div
-          ref={mobileScrollRef}
-          onScroll={handleMobileScroll}
-          className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth px-6 pb-4"
-          style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
-        >
-          {steps.map((step, i) => (
-            <div
-              key={i}
-              className="snap-start flex-shrink-0 flex flex-col gap-4"
-              style={{ width: '82vw' }}
-            >
-              {/* Text */}
-              <div>
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-sm font-bold text-[#111111]/40">{step.number}.</span>
-                  <span className="text-xl font-bold text-[#111111] tracking-tight">{step.title}</span>
-                </div>
-                {/* Progress bar */}
-                <div className="h-px bg-[#E5E5E5] w-full mb-3 overflow-hidden">
-                  {active === i && (
-                    <div className="h-full bg-[#111111] transition-none" style={{ width: `${progress}%` }} />
-                  )}
-                </div>
-                <p className="text-sm text-[#111111]/55 leading-relaxed">{step.body}</p>
-              </div>
-              {/* Image */}
-              <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#F7F7F7]">
-                <Image
-                  src={step.image}
-                  alt={step.title}
-                  fill
-                  className="object-cover"
-                  sizes="82vw"
-                  priority={i === 0}
-                />
-              </div>
-            </div>
-          ))}
-          {/* Trailing padding card */}
-          <div className="flex-shrink-0 w-2" />
-        </div>
-
-        {/* ── DESKTOP — accordion left, image right ── */}
-        <div className="hidden md:grid md:grid-cols-2 gap-16 items-center px-6">
-
-          <div className="flex flex-col gap-0">
-            {steps.map((step, i) => {
-              const isActive = active === i
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => handleClick(i)}
-                  className="text-left py-7 border-b border-[#E5E5E5] first:border-t first:border-[#E5E5E5]"
-                >
-                  <div className="flex items-baseline gap-3 mb-2">
-                    <span className={`text-xs font-bold tabular-nums transition-colors ${isActive ? 'text-[#111111]' : 'text-[#111111]/25'}`}>
-                      {step.number}.
-                    </span>
-                    <span className={`text-xl font-bold tracking-tight transition-colors leading-snug ${isActive ? 'text-[#111111]' : 'text-[#111111]/30'}`}>
-                      {step.title}
-                    </span>
-                  </div>
-                  <div className={`overflow-hidden transition-all duration-300 ${isActive ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <p className="text-sm text-[#111111]/55 leading-relaxed pl-5 pb-4">{step.body}</p>
-                  </div>
-                  <div className="h-px bg-[#E5E5E5] w-full mt-1 overflow-hidden">
-                    {isActive && (
-                      <div className="h-full bg-[#111111] transition-none" style={{ width: `${progress}%` }} />
-                    )}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="relative w-full aspect-[4/3] bg-[#F7F7F7] border border-[#E5E5E5] overflow-hidden rounded-2xl">
+        {/* MOBILE — horizontal scrolling cards */}
+        {isMobile && (
+          <div
+            ref={mobileScrollRef}
+            onScroll={handleMobileScroll}
+            style={{
+              display: 'flex',
+              gap: '16px',
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              scrollSnapType: 'x mandatory',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              paddingLeft: '24px',
+              paddingRight: '24px',
+              paddingBottom: '16px',
+            }}
+          >
             {steps.map((step, i) => (
               <div
                 key={i}
-                className={`absolute inset-0 transition-opacity duration-700 ${active === i ? 'opacity-100' : 'opacity-0'}`}
+                style={{
+                  scrollSnapAlign: 'start',
+                  flexShrink: 0,
+                  width: '82vw',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px',
+                }}
               >
-                <Image
-                  src={step.image}
-                  alt={step.title}
-                  fill
-                  className="object-cover"
-                  sizes="50vw"
-                  priority={i === 0}
-                />
+                {/* Text */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(17,17,17,0.4)' }}>{step.number}.</span>
+                    <span style={{ fontSize: '20px', fontWeight: 700, color: '#111111', lineHeight: 1.2 }}>{step.title}</span>
+                  </div>
+                  <div style={{ height: '1px', background: '#E5E5E5', marginBottom: '12px', overflow: 'hidden' }}>
+                    {active === i && (
+                      <div style={{ height: '100%', background: '#111111', width: `${progress}%` }} />
+                    )}
+                  </div>
+                  <p style={{ fontSize: '14px', color: 'rgba(17,17,17,0.55)', lineHeight: 1.6 }}>{step.body}</p>
+                </div>
+                {/* Image */}
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '4/3', borderRadius: '16px', overflow: 'hidden', background: '#F7F7F7' }}>
+                  <Image
+                    src={step.image}
+                    alt={step.title}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="82vw"
+                    priority={i === 0}
+                  />
+                </div>
               </div>
             ))}
+            <div style={{ flexShrink: 0, width: '8px' }} />
           </div>
+        )}
 
-        </div>
+        {/* DESKTOP — accordion left, image right */}
+        {!isMobile && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', alignItems: 'center', padding: '0 24px' }}>
+
+            <div>
+              {steps.map((step, i) => {
+                const isActive = active === i
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleClick(i)}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '28px 0',
+                      borderBottom: '1px solid #E5E5E5',
+                      borderTop: i === 0 ? '1px solid #E5E5E5' : undefined,
+                      display: 'block',
+                      background: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: isActive ? '#111111' : 'rgba(17,17,17,0.25)' }}>
+                        {step.number}.
+                      </span>
+                      <span style={{ fontSize: '20px', fontWeight: 700, color: isActive ? '#111111' : 'rgba(17,17,17,0.3)', lineHeight: 1.2 }}>
+                        {step.title}
+                      </span>
+                    </div>
+                    <div style={{
+                      overflow: 'hidden',
+                      maxHeight: isActive ? '160px' : '0px',
+                      opacity: isActive ? 1 : 0,
+                      transition: 'max-height 0.3s ease, opacity 0.3s ease',
+                    }}>
+                      <p style={{ fontSize: '14px', color: 'rgba(17,17,17,0.55)', lineHeight: 1.6, paddingLeft: '20px', paddingBottom: '16px' }}>
+                        {step.body}
+                      </p>
+                    </div>
+                    <div style={{ height: '1px', background: '#E5E5E5', marginTop: '4px', overflow: 'hidden' }}>
+                      {isActive && (
+                        <div style={{ height: '100%', background: '#111111', width: `${progress}%` }} />
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '4/3', background: '#F7F7F7', border: '1px solid #E5E5E5', borderRadius: '16px', overflow: 'hidden' }}>
+              {steps.map((step, i) => (
+                <div
+                  key={i}
+                  style={{
+                    position: 'absolute', inset: 0,
+                    opacity: active === i ? 1 : 0,
+                    transition: 'opacity 0.7s ease',
+                  }}
+                >
+                  <Image
+                    src={step.image}
+                    alt={step.title}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    sizes="50vw"
+                    priority={i === 0}
+                  />
+                </div>
+              ))}
+            </div>
+
+          </div>
+        )}
+
       </div>
     </section>
   )
