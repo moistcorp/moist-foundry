@@ -68,7 +68,7 @@ export default function ShopProductClient({
       <div className="max-w-7xl mx-auto px-6 py-16">
         <Breadcrumbs crumbs={[
           { label: 'Home', href: '/' },
-          { label: 'Shop', href: '/shop' },
+          { label: 'Products', href: '/products' },
           { label: product.name },
         ]} />
 
@@ -166,17 +166,39 @@ export default function ShopProductClient({
               <button
                 type="button"
                 onClick={handleBuyNow}
-                className="w-full bg-[#111111] text-white py-4 text-sm font-medium hover:bg-black transition-colors"
+                className="w-full rounded-md bg-[#111111] text-white py-4 text-sm font-medium hover:bg-black transition-colors"
               >
                 Buy now
               </button>
               <button
                 type="button"
                 onClick={handleAdd}
-                className="w-full border border-[#111111] text-[#111111] py-4 text-sm font-medium hover:bg-[#111111] hover:text-white transition-colors"
+                className="w-full rounded-md border border-[#111111] text-[#111111] py-4 text-sm font-medium hover:bg-[#111111] hover:text-white transition-colors"
               >
                 {added ? 'Added to cart' : 'Add to cart'}
               </button>
+              <Link
+  href="/configure"
+  className="
+    w-full
+    rounded-md
+    bg-[#111111]
+    py-4
+    text-center
+    text-sm
+    font-semibold
+    text-white
+    shadow-lg
+    transition-all
+    duration-300
+    hover:-translate-y-0.5
+    hover:bg-black
+    hover:shadow-xl
+    active:translate-y-0
+  "
+>
+  Start Designing
+</Link>
             </div>
 
             {/* Details */}

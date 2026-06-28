@@ -9,7 +9,7 @@ const accordionItems = [
   },
   {
     title: 'Extensive Customisation',
-    body: 'Over 2500 colours to match your brand identity and 7 professional embellishment techniques to bring your merch vision to life.',
+    body: 'Over 2500 colours to match your brand identity and 6 professional embellishment techniques to bring your merch vision to life.',
   },
   {
     title: 'Flexible MOQs from 50 pieces',

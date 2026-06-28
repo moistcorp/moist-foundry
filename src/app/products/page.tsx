@@ -24,7 +24,7 @@ export default function Products() {
       <section className="max-w-7xl mx-auto px-6 pb-12">
         <div className="border border-[#E5E5E5] px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 bg-white">
           <p className="text-sm text-[#111111]/60">
-            All pieces manufactured at our Greater Noida facility. Ships within 24 hours.
+            Ships within 24 hours.
           </p>
           <div className="flex gap-6 text-xs text-[#111111]/40 shrink-0">
             <span>Free shipping above ₹2000 spend</span>
