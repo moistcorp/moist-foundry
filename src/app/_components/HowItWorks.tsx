@@ -3,14 +3,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 
-const STEP_DURATION = 5000 // ms per step
+const STEP_DURATION = 5000
 
 const steps = [
   {
     number: '1',
     title: 'Select a product',
     body: 'Choose from tees, hoodies, sweatshirts, longsleeves, and totes — all manufactured at our Greater Noida facility. Every blank is cut and sewn in-house.',
-    image: '/images/how-it-works-1.jpg', // replace with your actual images
+    image: '/images/how-it-works-1.jpg',
   },
   {
     number: '2',
@@ -85,11 +85,10 @@ export default function HowItWorks() {
         {/* Body */}
         <div className="grid md:grid-cols-2 gap-16 items-center">
 
-          {/* LEFT — steps */}
+          {/* LEFT — steps (always on top on mobile) */}
           <div className="flex flex-col gap-0">
             {steps.map((step, i) => {
               const isActive = active === i
-
               return (
                 <button
                   key={i}
@@ -97,7 +96,6 @@ export default function HowItWorks() {
                   onClick={() => handleClick(i)}
                   className="text-left py-7 border-b border-[#E5E5E5] first:border-t first:border-[#E5E5E5] group"
                 >
-                  {/* Step number + title */}
                   <div className="flex items-baseline gap-3 mb-2">
                     <span className={`text-xs font-bold tabular-nums transition-colors ${isActive ? 'text-[#111111]' : 'text-[#111111]/25'}`}>
                       {step.number}.
@@ -107,14 +105,12 @@ export default function HowItWorks() {
                     </span>
                   </div>
 
-                  {/* Body — only visible when active */}
                   <div className={`overflow-hidden transition-all duration-300 ${isActive ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
                     <p className="text-sm text-[#111111]/55 leading-relaxed pl-5 pb-4">
                       {step.body}
                     </p>
                   </div>
 
-                  {/* Progress bar */}
                   <div className="h-px bg-[#E5E5E5] w-full mt-1 overflow-hidden">
                     {isActive && (
                       <div
@@ -128,8 +124,10 @@ export default function HowItWorks() {
             })}
           </div>
 
-          {/* RIGHT — image */}
-          <div className="relative w-full aspect-[4/3] bg-[#F7F7F7] border border-[#E5E5E5] overflow-hidden rounded-2xl">
+          {/* RIGHT — desktop: crossfade. Mobile: horizontal slide strip */}
+
+          {/* DESKTOP — hidden on mobile */}
+          <div className="hidden md:block relative w-full aspect-[4/3] bg-[#F7F7F7] border border-[#E5E5E5] overflow-hidden rounded-2xl">
             {steps.map((step, i) => (
               <div
                 key={i}
@@ -140,11 +138,47 @@ export default function HowItWorks() {
                   alt={step.title}
                   fill
                   className="object-cover"
-                 sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="50vw"
                   priority={i === 0}
                 />
               </div>
             ))}
+          </div>
+
+          {/* MOBILE — horizontal sliding strip, shown below steps */}
+          <div className="md:hidden w-full overflow-hidden rounded-2xl aspect-[4/3] bg-[#F7F7F7]">
+            <div
+              className="flex h-full transition-transform duration-500 ease-in-out"
+              style={{ transform: `translateX(-${active * 100}%)`, width: `${steps.length * 100}%` }}
+            >
+              {steps.map((step, i) => (
+                <div
+                  key={i}
+                  className="relative h-full flex-shrink-0"
+                  style={{ width: `${100 / steps.length}%` }}
+                >
+                  <Image
+                    src={step.image}
+                    alt={step.title}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                    priority={i === 0}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Dot indicators */}
+            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+              {steps.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleClick(i)}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${active === i ? 'bg-[#111111]' : 'bg-[#111111]/30'}`}
+                />
+              ))}
+            </div>
           </div>
 
         </div>

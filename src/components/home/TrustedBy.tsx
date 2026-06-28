@@ -13,7 +13,7 @@ export default function TrustedBy() {
   const marquee = [...brands, ...brands]
 
   return (
-    <section className="border-y border-[#E5E5E5] bg-white py-10 overflow-hidden">
+    <section className="bg-white py-10 overflow-hidden">
 
       <div className="max-w-7xl mx-auto px-6">
 

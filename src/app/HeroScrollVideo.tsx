@@ -8,6 +8,7 @@ export default function HeroScrollVideo() {
   const containerRef = useRef<HTMLDivElement>(null)
   const videoWrapRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const hasStarted = useRef(false)
 
   useEffect(() => {
     const container = containerRef.current
@@ -17,27 +18,21 @@ export default function HeroScrollVideo() {
 
     const handleScroll = () => {
       const rect = container.getBoundingClientRect()
-      // How far the top of the container has scrolled above the viewport top
       const scrolled = Math.max(0, -rect.top)
-      // Total scrollable distance = container height minus one viewport
       const scrollable = container.offsetHeight - window.innerHeight
-      const progress = scrollable > 0 ? Math.min(scrolled / scrollable, 1) : 0
+      if (scrollable <= 0) return
+      const progress = Math.min(scrolled / scrollable, 1)
 
-      // Inset: starts at 24px on all sides, collapses to 0
-      const inset = Math.round(24 * (1 - progress))
-      // Border radius: 20px → 0px
-      const radius = Math.round(20 * (1 - progress))
+      const inset = Math.max(0, 20 * (1 - progress))
+      const radius = Math.max(0, 20 * (1 - progress))
 
-      videoWrap.style.top = `${inset}px`
-      videoWrap.style.left = `${inset}px`
-      videoWrap.style.right = `${inset}px`
-      videoWrap.style.bottom = `${inset}px`
+      videoWrap.style.inset = `${inset}px`
       videoWrap.style.borderRadius = `${radius}px`
 
-      // Play when mid-animation, pause at edges
-      if (progress > 0.02) {
-  video.play().catch(() => {})
-}
+      if (!hasStarted.current && progress > 0.01) {
+        hasStarted.current = true
+        video.play().catch(() => {})
+      }
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -47,10 +42,8 @@ export default function HeroScrollVideo() {
 
   return (
     <>
-      {/* ── HERO — normal document flow ── */}
+      {/* HERO */}
       <section className="grid lg:grid-cols-2 min-h-[90vh]">
-
-        {/* Left — text */}
         <div className="flex flex-col justify-center px-8 md:px-16 py-20 lg:py-0 bg-white">
           <p className="text-xs text-[#111111]/40 font-medium mb-6 tracking-widest uppercase">
             Custom apparel for businesses
@@ -87,7 +80,6 @@ export default function HeroScrollVideo() {
           </div>
         </div>
 
-        {/* Right — hero image */}
         <div className="relative bg-[#F7F7F7] flex items-center justify-center min-h-64 lg:min-h-full overflow-hidden">
           <Image
             src="/hero.jpg"
@@ -103,25 +95,22 @@ export default function HeroScrollVideo() {
             <p className="text-xs text-[#111111]/50">per piece &middot; MOQ 50</p>
           </div>
         </div>
-
       </section>
 
-      {/* ── SCROLL VIDEO — tall container drives animation ── */}
-      <div ref={containerRef} className="relative h-[120vh] overflow-hidden">
-
-        {/* Sticky frame — locks to viewport while scrolling through container */}
-        <div className="sticky top-0 h-screen">
-
-          {/* Video card — absolutely positioned, inset shrinks to 0 on scroll */}
+      {/* SCROLL VIDEO */}
+      <div
+        ref={containerRef}
+        className="relative h-[130vh]"
+        style={{ contain: 'paint' }}
+      >
+        <div className="sticky top-0 h-screen w-full" style={{ contain: 'paint' }}>
           <div
             ref={videoWrapRef}
-            className="absolute overflow-hidden"
+            className="absolute bg-black"
             style={{
-              top: '24px',
-              left: '24px',
-              right: '24px',
-              bottom: '24px',
+              inset: '20px',
               borderRadius: '20px',
+              overflow: 'hidden',
             }}
           >
             <video
@@ -131,10 +120,10 @@ export default function HeroScrollVideo() {
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
+              webkit-playsinline="true"
             />
           </div>
-
         </div>
       </div>
     </>

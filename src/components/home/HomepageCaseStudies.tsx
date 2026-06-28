@@ -5,7 +5,7 @@ import { caseStudies } from '@/lib/casestudies'
 
 export default function HomepageCaseStudies() {
   return (
-    <section className="border-y border-[#E5E5E5] py-24 bg-white">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6">
 
         {/* Header */}

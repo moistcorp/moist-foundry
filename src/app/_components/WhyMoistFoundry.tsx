@@ -25,7 +25,7 @@ export default function WhyMoistFoundry() {
   const [openIndex, setOpenIndex] = useState<number>(0)
 
   return (
-    <section className="border-t border-[#E5E5E5] py-20 bg-white">
+    <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid md:grid-cols-2 gap-16 items-start">
 

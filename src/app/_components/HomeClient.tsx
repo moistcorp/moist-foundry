@@ -55,7 +55,7 @@ export default function HomeClient() {
      <TrustedBy />
 
       {/* PRICING ESTIMATOR — full version matching pricing page */}
-      <section className="border-t border-[#E5E5E5] py-20 bg-white">
+      <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-16 items-start">
 
