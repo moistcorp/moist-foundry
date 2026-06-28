@@ -31,6 +31,7 @@ export default function HowItWorks() {
   const [progress, setProgress] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef<number>(Date.now())
+  const mobileScrollRef = useRef<HTMLDivElement>(null)
 
   const startTimer = (index: number) => {
     if (intervalRef.current) clearInterval(intervalRef.current)
@@ -57,17 +58,37 @@ export default function HowItWorks() {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [])
 
+  // Sync mobile scroll position when active changes via timer
+  useEffect(() => {
+    const el = mobileScrollRef.current
+    if (!el) return
+    const cardWidth = el.offsetWidth * 0.82 + 16 // 82vw card + gap
+    el.scrollTo({ left: active * cardWidth, behavior: 'smooth' })
+  }, [active])
+
   const handleClick = (index: number) => {
     setActive(index)
     startTimer(index)
   }
 
+  // Detect which card is in view on mobile scroll
+  const handleMobileScroll = () => {
+    const el = mobileScrollRef.current
+    if (!el) return
+    const cardWidth = el.offsetWidth * 0.82 + 16
+    const index = Math.round(el.scrollLeft / cardWidth)
+    if (index !== active) {
+      setActive(index)
+      startTimer(index)
+    }
+  }
+
   return (
     <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto">
 
         {/* Header */}
-        <div className="mb-14">
+        <div className="mb-10 px-6">
           <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">How it works</p>
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <h2 className="text-4xl font-bold text-[#111111] tracking-tight leading-tight">
@@ -82,10 +103,53 @@ export default function HowItWorks() {
           </div>
         </div>
 
-        {/* Body */}
-        <div className="grid md:grid-cols-2 gap-16 items-center">
+        {/* ── MOBILE — horizontal scrolling cards ── */}
+        <div
+          ref={mobileScrollRef}
+          onScroll={handleMobileScroll}
+          className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth px-6 pb-4"
+          style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+        >
+          {steps.map((step, i) => (
+            <div
+              key={i}
+              className="snap-start flex-shrink-0 flex flex-col gap-4"
+              style={{ width: '82vw' }}
+            >
+              {/* Text */}
+              <div>
+                <div className="flex items-baseline gap-2 mb-2">
+                  <span className="text-sm font-bold text-[#111111]/40">{step.number}.</span>
+                  <span className="text-xl font-bold text-[#111111] tracking-tight">{step.title}</span>
+                </div>
+                {/* Progress bar */}
+                <div className="h-px bg-[#E5E5E5] w-full mb-3 overflow-hidden">
+                  {active === i && (
+                    <div className="h-full bg-[#111111] transition-none" style={{ width: `${progress}%` }} />
+                  )}
+                </div>
+                <p className="text-sm text-[#111111]/55 leading-relaxed">{step.body}</p>
+              </div>
+              {/* Image */}
+              <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#F7F7F7]">
+                <Image
+                  src={step.image}
+                  alt={step.title}
+                  fill
+                  className="object-cover"
+                  sizes="82vw"
+                  priority={i === 0}
+                />
+              </div>
+            </div>
+          ))}
+          {/* Trailing padding card */}
+          <div className="flex-shrink-0 w-2" />
+        </div>
 
-          {/* LEFT — steps (always on top on mobile) */}
+        {/* ── DESKTOP — accordion left, image right ── */}
+        <div className="hidden md:grid md:grid-cols-2 gap-16 items-center px-6">
+
           <div className="flex flex-col gap-0">
             {steps.map((step, i) => {
               const isActive = active === i
@@ -94,7 +158,7 @@ export default function HowItWorks() {
                   key={i}
                   type="button"
                   onClick={() => handleClick(i)}
-                  className="text-left py-7 border-b border-[#E5E5E5] first:border-t first:border-[#E5E5E5] group"
+                  className="text-left py-7 border-b border-[#E5E5E5] first:border-t first:border-[#E5E5E5]"
                 >
                   <div className="flex items-baseline gap-3 mb-2">
                     <span className={`text-xs font-bold tabular-nums transition-colors ${isActive ? 'text-[#111111]' : 'text-[#111111]/25'}`}>
@@ -104,19 +168,12 @@ export default function HowItWorks() {
                       {step.title}
                     </span>
                   </div>
-
                   <div className={`overflow-hidden transition-all duration-300 ${isActive ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <p className="text-sm text-[#111111]/55 leading-relaxed pl-5 pb-4">
-                      {step.body}
-                    </p>
+                    <p className="text-sm text-[#111111]/55 leading-relaxed pl-5 pb-4">{step.body}</p>
                   </div>
-
                   <div className="h-px bg-[#E5E5E5] w-full mt-1 overflow-hidden">
                     {isActive && (
-                      <div
-                        className="h-full bg-[#111111] transition-none"
-                        style={{ width: `${progress}%` }}
-                      />
+                      <div className="h-full bg-[#111111] transition-none" style={{ width: `${progress}%` }} />
                     )}
                   </div>
                 </button>
@@ -124,10 +181,7 @@ export default function HowItWorks() {
             })}
           </div>
 
-          {/* RIGHT — desktop: crossfade. Mobile: horizontal slide strip */}
-
-          {/* DESKTOP — hidden on mobile */}
-          <div className="hidden md:block relative w-full aspect-[4/3] bg-[#F7F7F7] border border-[#E5E5E5] overflow-hidden rounded-2xl">
+          <div className="relative w-full aspect-[4/3] bg-[#F7F7F7] border border-[#E5E5E5] overflow-hidden rounded-2xl">
             {steps.map((step, i) => (
               <div
                 key={i}
@@ -143,42 +197,6 @@ export default function HowItWorks() {
                 />
               </div>
             ))}
-          </div>
-
-          {/* MOBILE — horizontal sliding strip, shown below steps */}
-          <div className="md:hidden w-full overflow-hidden rounded-2xl aspect-[4/3] bg-[#F7F7F7]">
-            <div
-              className="flex h-full transition-transform duration-500 ease-in-out"
-              style={{ transform: `translateX(-${active * 100}%)`, width: `${steps.length * 100}%` }}
-            >
-              {steps.map((step, i) => (
-                <div
-                  key={i}
-                  className="relative h-full flex-shrink-0"
-                  style={{ width: `${100 / steps.length}%` }}
-                >
-                  <Image
-                    src={step.image}
-                    alt={step.title}
-                    fill
-                    className="object-cover"
-                    sizes="100vw"
-                    priority={i === 0}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Dot indicators */}
-            <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-              {steps.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleClick(i)}
-                  className={`w-1.5 h-1.5 rounded-full transition-colors ${active === i ? 'bg-[#111111]' : 'bg-[#111111]/30'}`}
-                />
-              ))}
-            </div>
           </div>
 
         </div>
