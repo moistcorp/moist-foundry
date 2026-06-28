@@ -1,6 +1,8 @@
 'use client'
 import HomepageCaseStudies from '@/components/home/HomepageCaseStudies'
 import TrustedBy from '@/components/home/TrustedBy'
+import HowItWorks from '@/app/_components/HowItWorks'
+import HeroScrollVideo from '@/app/HeroScrollVideo'
 import WhyMoistFoundry from '@/app/_components/WhyMoistFoundry'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -43,111 +45,14 @@ export default function HomeClient() {
   return (
     <>
       {/* HERO */}
-      <section className="grid lg:grid-cols-2 min-h-[90vh] border-b border-[#E5E5E5]">
-        <div className="flex flex-col justify-center px-8 md:px-16 py-20 lg:py-0">
-          <p className="text-xs text-[#111111]/40 font-medium mb-6 tracking-widest uppercase">
-            Custom apparel for businesses
-          </p>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-[#111111] leading-[1.05] tracking-tight mb-6">
-            Custom merch<br />for your<br />business
-          </h1>
-          <p className="text-base text-[#111111]/50 max-w-sm mb-10 leading-relaxed">
-            From design to delivery: premium custom merch, made in India. Create, customise and place your order in just a few simple steps.
-          </p>
-          <div className="flex gap-6 mb-10">
-            <div>
-              <p className="text-2xl font-bold text-[#111111]">50</p>
-              <p className="text-xs text-[#111111]/40 uppercase tracking-wide">Min. pieces</p>
-            </div>
-            <div className="w-px bg-[#E5E5E5]" />
-            <div>
-              <p className="text-2xl font-bold text-[#111111]">{RUSH_DELIVERY_DAYS}</p>
-              <p className="text-xs text-[#111111]/40 uppercase tracking-wide">Day delivery</p>
-            </div>
-            <div className="w-px bg-[#E5E5E5]" />
-            <div>
-              <p className="text-2xl font-bold text-[#111111]">100%</p>
-              <p className="text-xs text-[#111111]/40 uppercase tracking-wide">Made in India</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/configure" className="bg-[#111111] text-white px-8 py-4 text-sm font-medium hover:bg-black transition-colors">
-              Start designing
-            </Link>
-            <Link href="/catalogue" className="border border-[#111111]/20 text-[#111111] px-8 py-4 text-sm font-medium hover:border-[#111111] transition-colors">
-              View catalogue
-            </Link>
-          </div>
-        </div>
+      
+     <HeroScrollVideo />
 
-        <div className="relative bg-[#F7F7F7] flex items-center justify-center min-h-64 lg:min-h-full overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Image src="/hero.jpg" alt="Hero image" width={800} height={600} className="object-cover" />
-          </div>
-          <div className="absolute bottom-8 left-8 bg-white border border-[#E5E5E5] px-5 py-4 shadow-sm">
-            <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-1">Starting from</p>
-            <p className="text-2xl font-bold text-[#111111]">&#8377;350</p>
-            <p className="text-xs text-[#111111]/50">per piece &middot; MOQ 50</p>
-          </div>
-        </div>
-      </section>
+     <HowItWorks />
 
-      {/* WHAT WE DO */}
-      <section className="border-b border-[#E5E5E5]">
-        <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#E5E5E5]">
-            {[
-              { label: 'T-Shirts & Tees', sub: '200 & 260 GSM · 2 fits' },
-              { label: 'Sweatshirts & Hoodies', sub: '320 GSM · 2 fits' },
-              { label: 'Accessories', sub: 'Canvas totes' },
-              { label: 'Screen Print, DTG, DTF, Embroidery, Heat Transfer', sub: '5 print techniques' },
-            ].map(item => (
-              <div key={item.label} className="px-6 py-4 first:pl-0">
-                <p className="text-sm font-semibold text-[#111111] leading-snug">{item.label}</p>
-                <p className="text-xs text-[#111111]/40 mt-1">{item.sub}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+     <WhyMoistFoundry />
 
-      {/* HOW IT WORKS */}
-      <section className="max-w-7xl mx-auto px-6 py-24">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div>
-            <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">The process</p>
-            <h2 className="text-4xl font-bold mb-6 tracking-tight leading-tight">
-              From brief to<br />delivery in {RUSH_DELIVERY_DAYS} days
-            </h2>
-            <p className="text-[#111111]/50 text-sm leading-relaxed mb-8">
-              Configure your order online in minutes. We review, produce, and ship with full visibility at every stage.
-            </p>
-            <Link href="/how-it-works" className="text-sm font-medium text-[#111111] border-b border-[#111111] pb-0.5 hover:opacity-60 transition-opacity">
-              See the full process
-            </Link>
-          </div>
-          <div className="flex flex-col border border-[#E5E5E5]">
-            {[
-              { num: '01', title: 'Configure online', desc: 'Choose product, color, upload artwork, pick print technique.' },
-              { num: '02', title: 'Reserve your slot', desc: 'Pay Rs.499 to confirm. We send a proforma within 24 hours.' },
-              { num: '03', title: 'We produce', desc: 'Manufacturing and QA at our Greater Noida facility.' },
-              { num: '04', title: 'Delivered to you', desc: `Packed and shipped. ${RUSH_DELIVERY_DAYS}-day production timeline.` },
-            ].map((s, i) => (
-              <div key={s.num} className={`flex gap-5 px-6 py-5 ${i < 3 ? 'border-b border-[#E5E5E5]' : ''}`}>
-                <span className="text-xs font-bold text-[#111111]/20 shrink-0 pt-0.5">{s.num}</span>
-                <div>
-                  <p className="text-sm font-semibold text-[#111111]">{s.title}</p>
-                  <p className="text-xs text-[#111111]/50 mt-0.5 leading-relaxed">{s.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-<WhyMoistFoundry />
-
-<TrustedBy />
+     <TrustedBy />
 
       {/* PRICING ESTIMATOR — full version matching pricing page */}
       <section className="border-t border-[#E5E5E5] py-20 bg-white">

@@ -69,22 +69,15 @@ export default function WhyMoistFoundry() {
           </div>
 
           {/* RIGHT — techniques image */}
-          <div>
-            <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">
-              Artwork Techniques
-            </p>
-            <p className="text-sm text-[#111111]/50 mb-6 leading-relaxed">
-              6 embellishment methods, all in-house. Mix and match per side, per garment.
-            </p>
-            <div className="relative w-full aspect-square border border-[#E5E5E5]">
+            <div className="relative w-full aspect-square border border-[#E5E5E5] overflow-hidden rounded-2xl">
               <Image
                 src="/images/print-techniques.jpg"
                 alt="Our 6 print and embroidery techniques — Screen Print, DTG, DTF, Reflective Heat Transfer, Embroidery, 3D Embroidery, Puff"
                 fill
-                className="object-cover"
+                className="object-cover"  
+               sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
-          </div>
 
         </div>
       </div>
