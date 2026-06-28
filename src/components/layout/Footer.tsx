@@ -9,7 +9,7 @@ export default function Footer() {
           <Image src="/logo3.png" alt="Moist Foundry" width={120} height={36} className="h-8 w-auto object-contain mb-3" />
         </div>
         <div className="flex flex-col gap-2">
-          <Link href="/catalogue" className="hover:text-[#111111] transition-colors">Catalogue</Link>
+          <Link href="/products" className="hover:text-[#111111] transition-colors">Products</Link>
           <Link href="/how-it-works" className="hover:text-[#111111] transition-colors">How it works</Link>
           <Link href="/pricing" className="hover:text-[#111111] transition-colors">Pricing</Link>
           <Link href="/journal" className="hover:text-[#111111] transition-colors">Journal</Link>

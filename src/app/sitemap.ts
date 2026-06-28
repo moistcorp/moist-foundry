@@ -7,9 +7,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticPages = [
     { url: base, priority: 1.0, changeFrequency: 'weekly' as const },
-    { url: `${base}/catalogue`, priority: 0.9, changeFrequency: 'weekly' as const },
     { url: `${base}/configure`, priority: 0.9, changeFrequency: 'monthly' as const },
-    { url: `${base}/shop`, priority: 0.8, changeFrequency: 'weekly' as const },
+    { url: `${base}/products`, priority: 0.8, changeFrequency: 'weekly' as const },
     { url: `${base}/pricing`, priority: 0.8, changeFrequency: 'monthly' as const },
     { url: `${base}/how-it-works`, priority: 0.7, changeFrequency: 'monthly' as const },
     { url: `${base}/journal`, priority: 0.7, changeFrequency: 'weekly' as const },
@@ -18,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ]
 
   const productPages = products.map(p => ({
-    url: `${base}/catalogue/${p.slug}`,
+    url: `${base}/products/${p.slug}`,
     priority: 0.8,
     changeFrequency: 'monthly' as const,
   }))

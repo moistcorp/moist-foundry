@@ -5,17 +5,17 @@ import { generateMeta } from '@/lib/seo'
 import { PRODUCT_PRICES } from '@/lib/pricing'
 
 export const metadata: Metadata = generateMeta({
-  title: 'Shop',
+  title: 'Products',
   description: 'Shop Moist Foundry\'s own line — designed and manufactured in-house. Heavyweight tees, hoodies, sweatpants, and more.',
-  path: '/shop',
+  path: '/products',
 })
 
-export default function Shop() {
+export default function Products() {
   return (
     <>
       <section className="max-w-7xl mx-auto px-6 pt-20 pb-12">
         <p className="text-xs text-[#111111]/40 font-medium mb-4 tracking-widest uppercase">Moist Foundry</p>
-        <h1 className="text-5xl font-bold text-[#111111] leading-tight mb-4 tracking-tight">Shop</h1>
+        <h1 className="text-5xl font-bold text-[#111111] leading-tight mb-4 tracking-tight">Products</h1>
         <p className="text-[#111111]/50 max-w-lg text-lg">
           Order samples of our products before placing a bulk order. All pieces are manufactured in-house.
         </p>
@@ -36,9 +36,9 @@ export default function Shop() {
       <section className="max-w-7xl mx-auto px-6 pb-24">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#E5E5E5]">
           {products.map(p => (
-            <Link key={p.id} href={`/shop/${p.slug}`}
+            <Link key={p.id} href={`/products/${p.slug}`}
               className="group bg-white flex flex-col hover:bg-[#F7F7F7] transition-colors">
-              <div className="relative w-full aspect-square bg-[#F7F7F7] flex items-center justify-center">
+              <div className="relative w-full aspect-[3/4] bg-[#F7F7F7] flex items-center justify-center">
                 {p.image ? (
                   <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                 ) : (
@@ -66,7 +66,6 @@ export default function Shop() {
           </div>
           <div className="flex gap-3 shrink-0">
             <Link href="/configure" className="bg-[#111111] text-white px-6 py-3 text-sm font-medium hover:bg-black transition">Start designing</Link>
-            <Link href="/catalogue" className="border border-[#111111] text-[#111111] px-6 py-3 text-sm font-medium hover:bg-[#111111] hover:text-white transition">View catalogue</Link>
           </div>
         </div>
       </section>

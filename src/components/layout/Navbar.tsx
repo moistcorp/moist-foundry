@@ -6,8 +6,7 @@ import { usePathname } from 'next/navigation'
 import { useCartStore } from '@/lib/store'
 
 const links = [
-  { label: 'Shop', href: '/shop' },
-  { label: 'Catalogue', href: '/catalogue' },
+  { label: 'Products', href: '/products' },
   { label: 'How it works', href: '/how-it-works' },
   { label: 'Work', href: '/work' },
   { label: 'Pricing', href: '/pricing' },

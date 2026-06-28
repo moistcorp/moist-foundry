@@ -77,7 +77,7 @@ export default function ShopProductClient({
           {/* Image */}
           <div className="relative">
             {product.image ? (
-              <div className="aspect-square overflow-hidden">
+              <div className="aspect-[3/4] overflow-hidden">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -85,7 +85,7 @@ export default function ShopProductClient({
                 />
               </div>
             ) : (
-              <div className="aspect-square bg-[#F7F7F7] flex items-center justify-center">
+              <div className="aspect-[3/4] bg-[#F7F7F7] flex items-center justify-center">
                 <span className="text-xs text-[#111111]/20 uppercase tracking-wide">Product photo</span>
               </div>
             )}
@@ -279,7 +279,7 @@ export default function ShopProductClient({
                 href={`/shop/${p.slug}`}
                 className="group bg-white flex flex-col hover:bg-[#F7F7F7] transition-colors"
               >
-                <div className="w-full aspect-square bg-[#F7F7F7] flex items-center justify-center overflow-hidden">
+                <div className="w-full aspect-[3/4] bg-[#F7F7F7] flex items-center justify-center overflow-hidden">
                   {p.image ? (
                     <img
                       src={p.image}
