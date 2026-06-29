@@ -17,11 +17,12 @@ export default function PaymentFailurePage() {
         const o = JSON.parse(raw)
         if (o.name) setName(o.name.split(' ')[0])
         // Restore configurator to review screen so retry works
-        const progress = localStorage.getItem('mf_configurator_v2')
+        const progress = sessionStorage.getItem('mf_configurator_v2')
         if (progress) {
           const p = JSON.parse(progress)
           p.screen = 'review'
-          localStorage.setItem('mf_configurator_v2', JSON.stringify(p))
+          p.savedAt = Date.now()
+          sessionStorage.setItem('mf_configurator_v2', JSON.stringify(p))
         }
       }
     } catch {/* ignore */}

@@ -21,7 +21,7 @@ const steps = [
   {
     number: '3',
     title: 'Place your order',
-    body: 'Review the order details and place your order. Our team will review it and given the OK, your new merch will arrive at your doorstep in 14 Days.',
+    body: 'Review the order details and place your order. Our team will review it and given the OK, your new merch will arrive at your doorstep in 18 Days.',
     image: '/images/how-it-works-3.jpg',
   },
 ]

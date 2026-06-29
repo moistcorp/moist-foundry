@@ -44,6 +44,7 @@ export default function PaymentSuccessPage() {
             // Clear pending order and configurator progress
             localStorage.removeItem('mf_pending_order')
             localStorage.removeItem('mf_configurator_v2')
+            sessionStorage.removeItem('mf_configurator_v2')
           })
           .catch(err => console.error('Email send failed:', err))
       }

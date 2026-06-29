@@ -17,7 +17,7 @@ const accordionItems = [
   },
   {
     title: 'Fast, predictable lead times',
-    body: 'Standard orders in 18–22 working days. Rush orders in 10–12. Timelines confirmed at order, not after.',
+    body: 'Standard orders in 35 working days. Rush orders in 18 working days. Timelines confirmed at order, not after.',
   },
 ]
 

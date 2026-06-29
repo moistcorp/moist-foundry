@@ -4,7 +4,7 @@ import { generateMeta } from '@/lib/seo'
 
 export const metadata: Metadata = generateMeta({
   title: 'How It Works',
-  description: 'From brief to delivery in 30 days. Learn how Moist Foundry handles custom apparel orders — configuration, production, QA, and shipping.',
+  description: 'From brief to delivery in 35 days. Learn how Moist Foundry handles custom apparel orders — configuration, production, QA, and shipping.',
   path: '/how-it-works',
 })
 
@@ -13,12 +13,12 @@ const steps = [
   { num: '02', title: 'Configure your order', desc: 'Select your fabric color, upload your artwork, choose print placement and technique. Set your size breakdown and quantity.' },
   { num: '03', title: 'We confirm your order', desc: 'Our team reviews your configuration and begins production within 24 hours. Once confirmed, production begins immediately.' },
   { num: '04', title: 'Production & QA', desc: 'Your order is manufactured at one of our facilities in India. Every piece goes through quality checks before packing.' },
-  { num: '05', title: 'Delivery', desc: 'Packed and shipped to your door within 30 days of order confirmation. Full tracking provided at every stage.' },
+  { num: '05', title: 'Delivery', desc: 'Packed and shipped to your door within 35 days (18 days if rush service availed) of order confirmation. Full tracking provided at every stage.' },
 ]
 
 const faqs = [
   { q: 'What is the minimum order quantity?', a: '50 pieces per design. This applies across all garment types.' },
-  { q: 'How long does production take?', a: 'Standard turnaround is 30 days from order confirmation. Rush timelines are shorter.' },
+  { q: 'How long does production take?', a: 'Standard turnaround is 35 days from order confirmation. Rush timelines are shorter (18 days).' },
   { q: 'What print techniques do you offer?', a: 'Screen printing, DTG, DTF, Reflective Heat Transfer, Embroidery, Puff. We recommend based on your artwork and fabric.' },
   { q: 'Can I get a sample before full production?', a: 'Yes. Pre-production samples are available for an additional charge and take 7-10 days.' },
   { q: 'Do you ship pan-India and internationally?', a: 'Yes. We ship across India and internationally. Shipping costs are calculated at quote stage.' },

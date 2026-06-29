@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import {
   PRODUCT_PRICES,
@@ -21,12 +21,23 @@ const products = [
   { name: 'Boxy Fit Tee (260 GSM)' },
   { name: 'Longsleeve Tee (260 GSM)' },
   { name: 'Regular Fit Sweatshirt (320 GSM)' },
-  { name: 'Boxy Fit Sweatshirt (320 GSM)' },
   { name: 'Regular Fit Hoodie (320 GSM)' },
   { name: 'Boxy Fit Hoodie (320 GSM)' },
-  { name: 'Shorts (220 GSM)' },
   { name: 'Canvas Tote Bag' },
 ]
+
+// Product image map — exact paths from products.ts
+const PRODUCT_IMAGES: Record<string, string> = {
+  'Regular Fit Tee (200 GSM)':        '/products/regular-fit-tee-200gsm.jpg',
+  'Boxy Fit Tee (200 GSM)':           '/products/boxy-fit-tee-200gsm.jpg',
+  'Regular Fit Tee (260 GSM)':        '/products/regular-fit-tee-260gsm.jpg',
+  'Boxy Fit Tee (260 GSM)':           '/products/boxy-fit-tee-260gsm.jpg',
+  'Longsleeve Tee (260 GSM)':         '/products/longsleeve-tee-260gsm.jpg',
+  'Regular Fit Sweatshirt (320 GSM)': '/products/regular-fit-sweatshirt-320gsm.jpg',
+  'Regular Fit Hoodie (320 GSM)':     '/products/regular-fit-hoodie-320gsm.jpg',
+  'Boxy Fit Hoodie (320 GSM)':        '/products/boxy-fit-hoodie-320gsm.jpg',
+  'Canvas Tote Bag':                  '/products/canvas-tote-bag.jpg',
+}
 
 const ALL_TECHNIQUES = [
   'Screen Print',
@@ -183,7 +194,6 @@ const productGroups = [
   { category: 'Longsleeve', items: products.filter(p => p.name.includes('Longsleeve')) },
   { category: 'Sweatshirts', items: products.filter(p => p.name.includes('Sweatshirt')) },
   { category: 'Hoodies', items: products.filter(p => p.name.includes('Hoodie')) },
-  { category: 'Bottoms', items: products.filter(p => p.name.includes('Shorts')) },
   { category: 'Accessories', items: products.filter(p => p.name.includes('Tote')) },
 ]
 
@@ -201,7 +211,8 @@ const INDIAN_STATES = [
 const ALLOWED_ARTWORK_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.svg', '.ai']
 const ALLOWED_NECK_LABEL_EXTENSIONS = ['.svg', '.ai']
 const MAX_BYTES = 4.5 * 1024 * 1024
-const LS_KEY = 'mf_configurator_v2'
+const CONFIGURATOR_DRAFT_KEY = 'mf_configurator_v2'
+const CONFIGURATOR_DRAFT_TTL_MS = 2 * 60 * 60 * 1000
 
 type Screen = 'picker' | 'configure' | 'summary' | 'shipping' | 'review' | 'success'
 
@@ -281,17 +292,37 @@ function GarmentSVG({ color, activePlacements, frontPreview, backPreview, active
 
 // ─── ACCORDION ───────────────────────────────────────────────────────────────
 
-function Accordion({ title, children, defaultOpen = false }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
+function Accordion({ title, summary, complete = false, children, defaultOpen = false }: {
+  title: string
+  summary?: string
+  complete?: boolean
+  children: React.ReactNode | ((controls: { close: () => void }) => React.ReactNode)
+  defaultOpen?: boolean
+}) {
   const [open, setOpen] = useState(defaultOpen)
+  const content = typeof children === 'function' ? children({ close: () => setOpen(false) }) : children
   return (
-    <div className="border border-[#E5E5E5]">
+    <div className={`border transition-colors rounded-lg overflow-hidden ${open ? 'border-[#DADADA] bg-white' : 'border-transparent bg-[#F7F7F7] hover:bg-[#F2F2F2]'}`}>
       <button type="button" onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-5 py-4 text-left">
-        <span className="text-sm font-semibold text-[#111111]">{title}</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`transition-transform duration-200 shrink-0 ${open ? 'rotate-180' : ''}`}>
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
+        <span className="min-w-0">
+          <span className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-[#111111] tracking-tight">{title}</span>
+            {complete && (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="3" className="shrink-0">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </span>
+          {summary && <span className="block text-xs text-[#111111]/50 mt-1 truncate">{summary}</span>}
+        </span>
+        <span className="w-8 h-8 rounded-full bg-white border border-[#EAEAEA] flex items-center justify-center shrink-0 ml-4">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`transition-transform duration-200 ${open ? 'rotate-45' : ''}`}>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </span>
       </button>
-      {open && <div className="border-t border-[#E5E5E5] px-5 py-5">{children}</div>}
+      {open && <div className="border-t border-[#E5E5E5] px-5 py-5">{content}</div>}
     </div>
   )
 }
@@ -372,7 +403,7 @@ function NeckLabelSection({ config, onChange }: { config: NeckLabelConfig; onCha
         <div className="grid grid-cols-2 gap-2">
           {NECK_LABEL_TYPES.map(l => (
             <button key={l} type="button" onClick={() => onChange({ ...config, type: l })}
-              className={`px-3 py-2.5 border text-xs text-left transition-colors ${config.type === l ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'}`}>
+              className={`px-3 py-2.5 border rounded-md text-xs text-left transition-colors ${config.type === l ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40 bg-white'}`}>
               {l}
             </button>
           ))}
@@ -386,7 +417,7 @@ function NeckLabelSection({ config, onChange }: { config: NeckLabelConfig; onCha
             <div className="grid grid-cols-2 gap-2">
               {WOVEN_DIMENSIONS.map(d => (
                 <button key={d} type="button" onClick={() => onChange({ ...config, dimension: d })}
-                  className={`px-3 py-2 border text-xs transition-colors ${config.dimension === d ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'}`}>
+                  className={`px-3 py-2 border rounded-md text-xs transition-colors ${config.dimension === d ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40 bg-white'}`}>
                   {d}
                 </button>
               ))}
@@ -398,7 +429,7 @@ function NeckLabelSection({ config, onChange }: { config: NeckLabelConfig; onCha
               {WOVEN_POSITIONS.map(pos => (
                 <button key={pos} type="button"
                   onClick={() => onChange({ ...config, position: pos, cornerStyle: pos === 'On neck tape' ? '2-corner' : config.cornerStyle })}
-                  className={`px-3 py-2.5 border text-xs text-left transition-colors ${config.position === pos ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'}`}>
+                  className={`px-3 py-2.5 border rounded-md text-xs text-left transition-colors ${config.position === pos ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40 bg-white'}`}>
                   {pos}
                 </button>
               ))}
@@ -410,7 +441,7 @@ function NeckLabelSection({ config, onChange }: { config: NeckLabelConfig; onCha
               <div className="grid grid-cols-3 gap-2">
                 {BELOW_TAPE_CORNERS.map(corner => (
                   <button key={corner} type="button" onClick={() => onChange({ ...config, cornerStyle: corner })}
-                    className={`px-2 py-2 border text-xs transition-colors ${config.cornerStyle === corner ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'}`}>
+                    className={`px-2 py-2 border rounded-md text-xs transition-colors ${config.cornerStyle === corner ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40 bg-white'}`}>
                     {corner}
                   </button>
                 ))}
@@ -431,7 +462,7 @@ function NeckLabelSection({ config, onChange }: { config: NeckLabelConfig; onCha
       )}
       {config.type !== 'No label' && (
         <a href="/downloads/neck-label-templates.zip" download
-          className="flex items-center justify-between border border-[#111111] px-4 py-3 text-xs font-medium text-[#111111] hover:bg-[#111111] hover:text-white transition-colors">
+          className="flex items-center justify-between border border-[#111111] rounded-md px-4 py-3 text-xs font-medium text-[#111111] hover:bg-[#111111] hover:text-white transition-colors">
           <span>Download neck label templates</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
@@ -467,7 +498,7 @@ function ArtworkUpload({ side, file, preview, onFile, onClear, error, isNeckLabe
       <input ref={inputRef} type="file" accept={acceptStr} className="hidden"
         onChange={e => e.target.files?.[0] && onFile(e.target.files[0])} />
       {preview ? (
-        <div className="border border-[#E5E5E5] p-3 flex items-center gap-3">
+        <div className="border border-[#E5E5E5] rounded-md p-3 flex items-center gap-3">
           <img src={preview} alt={side} className="w-10 h-10 object-contain bg-[#F7F7F7]" />
           <p className="text-xs flex-1 truncate">{file?.name}</p>
           <button type="button" onClick={onClear} className="text-xs text-[#111111]/40 hover:text-[#111111]">Remove</button>
@@ -505,7 +536,7 @@ function TechniqueSelector({ label, selected, onChange }: {
       <div className="flex flex-col gap-1.5">
         {ALL_TECHNIQUES.map(t => (
           <button key={t} type="button" onClick={() => onChange(t)}
-            className={`px-4 py-3 border text-left transition-colors ${selected === t ? 'border-[#111111] bg-[#111111]/5' : 'border-[#E5E5E5] hover:border-[#111111]/40'}`}>
+            className={`px-4 py-3 border rounded-md text-left transition-colors ${selected === t ? 'border-[#111111] bg-[#111111]/5' : 'border-[#E5E5E5] hover:border-[#111111]/40 bg-white'}`}>
             <p className="text-xs font-medium">{t}</p>
             <p className="text-xs text-[#111111]/40 mt-0.5">{techniqueInfo[t]}</p>
           </button>
@@ -572,6 +603,7 @@ export default function ConfigureClient() {
 
   const [product, setProduct] = useState(products[0].name)
   const [color, setColor] = useState('Bright White')
+  const [confirmedColor, setConfirmedColor] = useState('')
   const [activePlacements, setActivePlacements] = useState<string[]>(['Front'])
 
   // Per-side technique selection
@@ -598,66 +630,106 @@ export default function ConfigureClient() {
   const [billing, setBilling] = useState<ShippingState>(emptyAddress())
   const [billingSameAsShipping, setBillingSameAsShipping] = useState(false)
 
-  // ── LOCALSTORAGE RESTORE ──────────────────────────────────────────────────
-  useEffect(() => {
+  const resetConfiguratorDraft = useCallback(() => {
     try {
-      const saved = localStorage.getItem(LS_KEY)
+      sessionStorage.removeItem(CONFIGURATOR_DRAFT_KEY)
+      localStorage.removeItem(CONFIGURATOR_DRAFT_KEY)
+    } catch {/* ignore */}
+
+    setScreen('picker')
+    setActiveView('Front')
+    setProduct(products[0].name)
+    setColor('Bright White')
+    setConfirmedColor('')
+    setActivePlacements(['Front'])
+    setFrontTechnique('')
+    setBackTechnique('')
+    setFrontArtwork(null)
+    setBackArtwork(null)
+    setFrontPreview(null)
+    setBackPreview(null)
+    setFrontFileError('')
+    setBackFileError('')
+    setNeckLabel({ type: 'No label', dimension: '50x18mm', position: 'Below neck tape (5mm)', cornerStyle: '2 side' })
+    setTotalQty(50)
+    setRush(false)
+    setSizeQty({ XS: 0, S: 0, M: 0, L: 0, XL: 0, XXL: 0 })
+    setNotes('')
+    setShipping(emptyAddress())
+    setBilling(emptyAddress())
+    setBillingSameAsShipping(false)
+  }, [])
+
+  // ── TAB DRAFT RESTORE ─────────────────────────────────────────────────────
+  useEffect(() => {
+    let restoredDraft = false
+
+    try {
+      localStorage.removeItem(CONFIGURATOR_DRAFT_KEY)
+      const saved = sessionStorage.getItem(CONFIGURATOR_DRAFT_KEY)
       if (saved) {
         const d = JSON.parse(saved)
-        if (d.product) setProduct(d.product)
-        if (d.color) setColor(d.color)
-        if (d.activePlacements) setActivePlacements(d.activePlacements)
-        if (d.frontTechnique) setFrontTechnique(d.frontTechnique)
-        if (d.backTechnique) setBackTechnique(d.backTechnique)
-        if (d.neckLabel) setNeckLabel(d.neckLabel)
-        if (d.totalQty) setTotalQty(d.totalQty)
-        if (d.rush !== undefined) setRush(d.rush)
-        if (d.sizeQty) setSizeQty(d.sizeQty)
-        if (d.notes) setNotes(d.notes)
-        if (d.shipping) setShipping(d.shipping)
-        if (d.billing) setBilling(d.billing)
-        if (d.billingSameAsShipping !== undefined) setBillingSameAsShipping(d.billingSameAsShipping)
-        if (d.screen && ['configure','summary','shipping','review'].includes(d.screen)) setScreen(d.screen as Screen)
+        const draftAge = Date.now() - (d.savedAt ?? 0)
+
+        if (draftAge <= CONFIGURATOR_DRAFT_TTL_MS) {
+          restoredDraft = true
+          if (d.product) setProduct(d.product)
+          if (d.color) setColor(d.color)
+          if (d.confirmedColor) setConfirmedColor(d.confirmedColor)
+          if (d.activePlacements) setActivePlacements(d.activePlacements)
+          if (d.frontTechnique) setFrontTechnique(d.frontTechnique)
+          if (d.backTechnique) setBackTechnique(d.backTechnique)
+          if (d.neckLabel) setNeckLabel(d.neckLabel)
+          if (d.totalQty) setTotalQty(d.totalQty)
+          if (d.rush !== undefined) setRush(d.rush)
+          if (d.sizeQty) setSizeQty(d.sizeQty)
+          if (d.notes) setNotes(d.notes)
+          if (d.shipping) setShipping(d.shipping)
+          if (d.billing) setBilling(d.billing)
+          if (d.billingSameAsShipping !== undefined) setBillingSameAsShipping(d.billingSameAsShipping)
+          if (d.screen && ['configure','summary','shipping','review'].includes(d.screen)) setScreen(d.screen as Screen)
+        } else {
+          sessionStorage.removeItem(CONFIGURATOR_DRAFT_KEY)
+        }
       }
     } catch {/* ignore */}
 
-    // URL params
-    const p = searchParams.get('product')
-    const c = searchParams.get('color')
-    const ft = searchParams.get('frontTechnique')
-    const pl = searchParams.get('placements')
-    const s = searchParams.get('screen')
-    if (p) { setProduct(p); setScreen('configure') }
-    if (c) setColor(c)
-    if (ft) setFrontTechnique(ft)
-    if (pl) setActivePlacements(pl.split(','))
-    if (s && ['configure','summary','shipping','review'].includes(s)) setScreen(s as Screen)
+    if (!restoredDraft) {
+      const p = searchParams.get('product')
+      if (p) { setProduct(p); setScreen('configure') }
+    }
 
     setHydrated(true)
-  }, [])
+  }, [searchParams])
 
-  // ── LOCALSTORAGE SAVE ─────────────────────────────────────────────────────
+  // ── TAB DRAFT SAVE ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!hydrated || screen === 'picker' || screen === 'success') return
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify({
-        product, color, activePlacements, frontTechnique, backTechnique,
+      sessionStorage.setItem(CONFIGURATOR_DRAFT_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        product, color, confirmedColor, activePlacements, frontTechnique, backTechnique,
         neckLabel, totalQty, rush, sizeQty, notes, shipping, billing, billingSameAsShipping, screen,
       }))
     } catch {/* ignore */}
-  }, [product, color, activePlacements, frontTechnique, backTechnique, neckLabel, totalQty, rush, sizeQty, notes, shipping, billing, billingSameAsShipping, screen, hydrated])
+  }, [product, color, confirmedColor, activePlacements, frontTechnique, backTechnique, neckLabel, totalQty, rush, sizeQty, notes, shipping, billing, billingSameAsShipping, screen, hydrated])
 
-  // ── URL SYNC ──────────────────────────────────────────────────────────────
+  // ── URL CLEANUP ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!hydrated || screen === 'picker' || screen === 'success') return
-    const params = new URLSearchParams()
-    if (product) params.set('product', product)
-    if (color) params.set('color', color)
-    if (frontTechnique) params.set('frontTechnique', frontTechnique)
-    if (activePlacements.length) params.set('placements', activePlacements.join(','))
-    params.set('screen', screen)
-    router.replace(`/configure?${params.toString()}`, { scroll: false })
-  }, [product, color, frontTechnique, activePlacements, screen, hydrated])
+    if (window.location.search) router.replace('/configure', { scroll: false })
+  }, [screen, hydrated, router])
+
+  // ── TAB DRAFT EXPIRY ──────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!hydrated || screen === 'picker' || screen === 'success') return
+    const timeout = window.setTimeout(() => {
+      resetConfiguratorDraft()
+      router.replace('/configure', { scroll: false })
+    }, CONFIGURATOR_DRAFT_TTL_MS)
+
+    return () => window.clearTimeout(timeout)
+  }, [product, color, confirmedColor, activePlacements, frontTechnique, backTechnique, neckLabel, totalQty, rush, sizeQty, notes, shipping, billing, billingSameAsShipping, screen, hydrated, router, resetConfiguratorDraft])
 
   const { pricePerPiece, subtotal, gst, total, discount, discountedBase, rushCharge } = calcOrder(product, totalQty, rush)
   const deliveryDate = getDeliveryDate(rush)
@@ -689,7 +761,7 @@ export default function ConfigureClient() {
   const backActive = activePlacements.includes('Back')
 
   function canProceedToSummary() {
-    if (!color || activePlacements.length === 0) return false
+    if (!color || confirmedColor !== color || activePlacements.length === 0) return false
     if (frontActive && !frontTechnique) return false
     if (backActive && !backTechnique) return false
     if (totalQty < 50) return false
@@ -716,6 +788,12 @@ export default function ConfigureClient() {
     return type
   }
 
+  function garmentColorSummary() {
+    const selected = ALL_COLORS.find(c => c.name === color)
+    const group = selected?.signature ? 'Signature' : 'Pantone TPG'
+    return confirmedColor === color ? `${group}, ${color}` : `Unsaved changes, ${color}`
+  }
+
   function techniqueSummary() {
     if (frontActive && backActive) {
       if (frontTechnique === backTechnique) return frontTechnique
@@ -726,29 +804,66 @@ export default function ConfigureClient() {
     return '—'
   }
 
+  function artworkSummary() {
+    if (!activePlacements.length) return 'No Selection'
+    const technique = techniqueSummary()
+    const uploaded: string[] = []
+    if (frontArtwork) uploaded.push('Front artwork')
+    if (backArtwork) uploaded.push('Back artwork')
+    return [activePlacements.join(', '), technique !== '—' ? technique : '', uploaded.join(', ')].filter(Boolean).join(' · ')
+  }
+
+  const colorConfirmed = confirmedColor === color
+  const artworkComplete = activePlacements.length > 0 && (!frontActive || !!frontTechnique) && (!backActive || !!backTechnique)
+  const neckLabelComplete = neckLabel.type !== 'No label'
+
   // ── PRODUCT PICKER ────────────────────────────────────────────────────────
   if (screen === 'picker') return (
-    <div className="max-w-5xl mx-auto px-6 py-20">
+    <div className="max-w-6xl mx-auto px-6 py-16">
       <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-4">Step 1 of 5</p>
       <h1 className="text-4xl font-bold tracking-tight mb-2">What are you making?</h1>
       <p className="text-[#111111]/50 text-sm mb-14">Select a product to begin. MOQ 50 pieces.</p>
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-12">
         {productGroups.map(group => group.items.length > 0 ? (
           <div key={group.category}>
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-4 mb-6">
               <p className="text-xs font-medium uppercase tracking-widest text-[#111111]/40 shrink-0">{group.category}</p>
               <div className="flex-1 h-px bg-[#E5E5E5]" />
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {group.items.map(p => (
                 <button key={p.name} type="button"
-                  onClick={() => { setProduct(p.name); setFrontTechnique(''); setBackTechnique(''); setScreen('configure') }}
-                  className="p-5 border border-[#E5E5E5] text-left hover:border-[#111111] hover:bg-[#F7F7F7] transition-colors group">
-                  <div className="flex justify-between items-start gap-4">
-                    <p className="text-sm font-semibold text-[#111111] group-hover:underline leading-snug">{p.name}</p>
-                    <p className="text-xs text-[#111111]/40 shrink-0">from &#8377;{(PRODUCT_PRICES[p.name] ?? 0).toLocaleString('en-IN')}</p>
+                  onClick={() => { setProduct(p.name); setConfirmedColor(''); setFrontTechnique(''); setBackTechnique(''); setScreen('configure') }}
+                  className="bg-white text-left hover:bg-[#F7F7F7] transition-colors group flex flex-col">
+                  {/* Image area — no background, image fills fully */}
+                  <div className="w-full aspect-[4/5] overflow-hidden flex items-center justify-center bg-[#F7F7F7]">
+                    {PRODUCT_IMAGES[p.name] ? (
+                      <img
+                        src={PRODUCT_IMAGES[p.name]}
+                        alt={p.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <svg viewBox="0 0 120 120" className="w-2/5 h-2/5 text-[#111111]/10" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        {p.name.includes('Tote') ? (
+                          <path d="M25 40L32 25h10v8c0 4 46 4 46 0v-8h10l7 15v54H25V40z" />
+                        ) : p.name.includes('Hoodie') ? (
+                          <path d="M30 32L15 44l6 6 4-4v50h70V46l4 4 6-6-15-12c-6-3-12-6-20-7-2 7-7 12-15 12s-13-5-15-12c-8 1-14 4-20 7z" />
+                        ) : p.name.includes('Sweatshirt') ? (
+                          <path d="M30 32L15 44l6 6 4-4v50h70V46l4 4 6-6-15-12c-6-3-12-6-20-7-2 7-7 11-15 11s-13-4-15-11c-8 1-14 4-20 7z" />
+                        ) : p.name.includes('Longsleeve') ? (
+                          <path d="M30 32L15 52l6 6 4-4v54h70V54l4 4 6-6-15-20c-6-3-12-6-20-7-2 7-7 11-15 11s-13-4-15-11c-8 1-14 4-20 7z" />
+                        ) : (
+                          <path d="M30 32L15 44l6 6 4-4v50h70V46l4 4 6-6-15-12c-6-3-12-6-20-7-2 7-7 11-15 11s-13-4-15-11c-8 1-14 4-20 7z" />
+                        )}
+                      </svg>
+                    )}
                   </div>
-                  <p className="text-xs text-[#111111]/40 mt-2">Screen Print · DTG · Embroidery + more</p>
+                  {/* Label area */}
+                  <div className="px-3 py-3 flex items-start justify-between gap-2">
+                    <p className="text-xs font-medium text-[#111111] leading-snug group-hover:underline">{p.name}</p>
+                    <p className="text-xs text-[#111111]/40 shrink-0 whitespace-nowrap">from &#8377;{(PRODUCT_PRICES[p.name] ?? 0).toLocaleString('en-IN')}</p>
+                  </div>
                 </button>
               ))}
             </div>
@@ -761,160 +876,181 @@ export default function ConfigureClient() {
   // ── CONFIGURE SCREEN ──────────────────────────────────────────────────────
   if (screen === 'configure') return (
     <div className="flex flex-col lg:flex-row min-h-[calc(100vh-72px)]">
-      {/* LEFT — preview */}
-      <div className="lg:w-3/5 bg-[#F7F7F7] flex flex-col items-center justify-center p-8 lg:p-16 relative">
-        <button type="button" onClick={() => setScreen('picker')}
-          className="absolute top-6 left-6 text-xs text-[#111111]/40 hover:text-[#111111] transition-colors flex items-center gap-1.5">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
-          Change product
-        </button>
+      {/* LEFT — full bleed preview */}
+      <div className="lg:w-3/5 bg-[#F7F7F7] flex flex-col relative">
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-6 py-4">
+          <button type="button" onClick={() => setScreen('picker')}
+            className="text-xs text-[#111111]/40 hover:text-[#111111] transition-colors flex items-center gap-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
+            {product}
+          </button>
+          <div className="text-xs text-[#111111]/30">{color}</div>
+        </div>
 
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex bg-white border border-[#E5E5E5] overflow-hidden">
+        {/* Garment — fills remaining height */}
+        <div className="flex-1 flex items-center justify-center px-12 pb-24">
+          <div className="w-full max-w-sm">
+            <GarmentSVG color={color} activePlacements={activePlacements} frontPreview={frontPreview}
+              backPreview={backPreview} activeView={activeView} productName={product} />
+          </div>
+        </div>
+
+        {/* Front / Back toggle — pinned to bottom center like Assembly */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex bg-white border border-[#E5E5E5] overflow-hidden shadow-sm">
           {(['Front', 'Back'] as const).map(v => (
             <button key={v} type="button" onClick={() => setActiveView(v)}
-              className={`px-5 py-2 text-xs font-medium transition-colors ${activeView === v ? 'bg-[#111111] text-white' : 'text-[#111111]/50 hover:text-[#111111]'}`}>
+              className={`px-6 py-2.5 text-xs font-medium transition-colors ${activeView === v ? 'bg-[#111111] text-white' : 'text-[#111111]/50 hover:text-[#111111]'}`}>
               {v}
             </button>
           ))}
         </div>
-
-        <div className="w-full max-w-xs mt-8">
-          <GarmentSVG color={color} activePlacements={activePlacements} frontPreview={frontPreview}
-            backPreview={backPreview} activeView={activeView} productName={product} />
-        </div>
-
-        <div className="mt-4 text-center">
-          <p className="text-sm font-medium text-[#111111]">{product}</p>
-          <p className="text-xs text-[#111111]/40 mt-1">{color}</p>
-        </div>
-
-        {totalQty >= 50 && (
-          <div className="mt-6 bg-white border border-[#E5E5E5] px-6 py-4 w-full max-w-xs">
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-xs text-[#111111]/40">Unit cost</span>
-              <span className="text-sm font-bold">&#8377;{pricePerPiece.toLocaleString('en-IN')}</span>
-            </div>
-            {discount > 0 && (
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="text-xs text-[#111111]/40">Volume discount</span>
-                <span className="text-xs text-green-600 font-medium">-{(discount * 100).toFixed(0)}%</span>
-              </div>
-            )}
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-xs text-[#111111]/40">Subtotal</span>
-              <span className="text-sm font-bold">&#8377;{subtotal.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-xs text-[#111111]/40">GST (5%)</span>
-              <span className="text-xs text-[#111111]/60">&#8377;{gst.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-between items-center pt-2 border-t border-[#E5E5E5] mt-1">
-              <span className="text-xs font-semibold">Total (incl. GST)</span>
-              <span className="text-sm font-bold">&#8377;{total.toLocaleString('en-IN')}</span>
-            </div>
-            <div className="flex justify-between items-center mt-2 pt-2 border-t border-[#E5E5E5]">
-              <span className="text-xs text-[#111111]/40">Est. delivery</span>
-              <span className="text-xs font-medium">{deliveryDate}</span>
-            </div>
-            <p className="text-xs text-[#111111]/30 mt-2">+ Shipping quoted separately</p>
-          </div>
-        )}
       </div>
 
       {/* RIGHT — accordions */}
-      <div className="lg:w-2/5 bg-white flex flex-col border-l border-[#E5E5E5]">
-        <div className="border-b border-[#E5E5E5] px-6 py-4">
+      <div className="lg:w-2/5 bg-[#F4F4F4] flex flex-col border-l border-[#E5E5E5]">
+        <div className="border-b border-[#E5E5E5] bg-white px-6 py-4">
           <p className="text-xs text-[#111111]/40 uppercase tracking-widest mb-1">Configuring</p>
           <p className="text-sm font-semibold">{product}</p>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-3">
           {/* Color */}
-          <Accordion title={`Garment color${color ? ` — ${color}` : ''}`} defaultOpen>
-            <ColorPicker selected={color} onSelect={setColor} />
-          </Accordion>
-
-          {/* Placement */}
-          <Accordion title={`Print placement — ${activePlacements.join(', ') || 'none'}`} defaultOpen>
-            <div className="grid grid-cols-2 gap-2">
-              {PLACEMENTS.map(p => (
-                <button key={p} type="button" onClick={() => togglePlacement(p)}
-                  className={`px-3 py-2.5 border text-xs text-left transition-colors flex items-center justify-between ${activePlacements.includes(p) ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40'}`}>
-                  {p}
-                  {activePlacements.includes(p) && (
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
-                  )}
+          <Accordion title="Garment Colour" summary={garmentColorSummary()} complete={colorConfirmed} defaultOpen>
+            {({ close }) => (
+            <>
+            <div className="mb-5 rounded-md border border-[#E5E5E5] bg-[#FAFAFA] p-3">
+              <div className="flex items-center gap-3">
+                <span
+                  className="w-9 h-9 rounded-full border border-[#DADADA] shrink-0"
+                  style={{ backgroundColor: getColorHex(color) }}
+                  aria-hidden="true"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs text-[#111111]/40 uppercase tracking-widest">Selected colour</p>
+                  <p className="text-sm font-semibold text-[#111111] truncate">{color}</p>
+                </div>
+                {colorConfirmed ? (
+                  <span className="text-xs font-medium text-green-700 bg-green-50 border border-green-100 px-2.5 py-1 rounded-full shrink-0">Confirmed</span>
+                ) : (
+                  <span className="text-xs font-medium text-[#111111]/60 bg-white border border-[#E5E5E5] px-2.5 py-1 rounded-full shrink-0">Unsaved</span>
+                )}
+              </div>
+              {!colorConfirmed && (
+                <button type="button"
+                  onClick={() => {
+                    setConfirmedColor(color)
+                    close()
+                  }}
+                  className="mt-3 w-full py-3 text-sm font-medium transition-colors bg-[#111111] text-white hover:bg-black flex items-center justify-center gap-2 rounded-md">
+                  Confirm garment colour
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 </button>
-              ))}
+              )}
             </div>
+            <ColorPicker
+              selected={color}
+              onSelect={nextColor => {
+                setColor(nextColor)
+                if (nextColor !== confirmedColor) setConfirmedColor('')
+              }}
+            />
+            </>
+            )}
           </Accordion>
 
           {/* Artwork */}
-          <Accordion title="Artwork upload">
-            <div className="flex flex-col gap-3 mb-3">
-              <a href="/downloads/moistfoundry-print_templates-1.0.zip" download
-                className="flex items-center justify-between border border-[#111111] px-4 py-3 text-xs font-medium text-[#111111] hover:bg-[#111111] hover:text-white transition-colors">
-                <span>Download print templates</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-              </a>
-              <p className="text-xs text-[#111111]/40">We recommend using our .ai templates. One template covers front and back.</p>
-            </div>
-            <div className="flex flex-col gap-5">
-              {frontActive && (
-                <div>
-                  <p className="text-xs text-[#111111]/50 mb-2 uppercase tracking-widest">Front artwork</p>
-                  <ArtworkUpload side="front" file={frontArtwork} preview={frontPreview}
-                    onFile={f => handleArtwork(f, 'front')} onClear={() => { setFrontArtwork(null); setFrontPreview(null) }}
-                    error={frontFileError} />
+          <Accordion title="Artwork" summary={artworkSummary()} complete={artworkComplete} defaultOpen>
+            <div className="flex flex-col gap-7">
+              <section>
+                <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-3">Print technique</p>
+                <div className="flex flex-col gap-6">
+                  {frontActive && (
+                    <TechniqueSelector label="Front technique" selected={frontTechnique} onChange={setFrontTechnique} />
+                  )}
+                  {backActive && (
+                    <TechniqueSelector label="Back technique" selected={backTechnique} onChange={setBackTechnique} />
+                  )}
+                  {!frontActive && !backActive && (
+                    <p className="text-xs text-[#111111]/40">Select a print placement first.</p>
+                  )}
                 </div>
-              )}
-              {backActive && (
-                <div>
-                  <p className="text-xs text-[#111111]/50 mb-2 uppercase tracking-widest">Back artwork <span className="normal-case font-normal">(optional)</span></p>
-                  <ArtworkUpload side="back" file={backArtwork} preview={backPreview}
-                    onFile={f => handleArtwork(f, 'back')} onClear={() => { setBackArtwork(null); setBackPreview(null) }}
-                    error={backFileError} />
-                </div>
-              )}
-              {!frontActive && !backActive && (
-                <p className="text-xs text-[#111111]/40">Select a print placement above to upload artwork.</p>
-              )}
-            </div>
-          </Accordion>
+              </section>
 
-          {/* Techniques — per side */}
-          <Accordion title={`Print technique${frontTechnique || backTechnique ? ` — ${techniqueSummary()}` : ''}`}>
-            <div className="flex flex-col gap-6">
-              {frontActive && (
-                <TechniqueSelector label="Front technique" selected={frontTechnique} onChange={setFrontTechnique} />
-              )}
-              {backActive && (
-                <TechniqueSelector label="Back technique" selected={backTechnique} onChange={setBackTechnique} />
-              )}
-              {!frontActive && !backActive && (
-                <p className="text-xs text-[#111111]/40">Select a print placement above first.</p>
-              )}
+              <section>
+                <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-3">Print placements</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PLACEMENTS.map(p => (
+                    <button key={p} type="button" onClick={() => togglePlacement(p)}
+                  className={`px-3 py-2.5 border rounded-md text-xs text-left transition-colors flex items-center justify-between ${activePlacements.includes(p) ? 'border-[#111111] bg-[#111111]/5 font-medium' : 'border-[#E5E5E5] text-[#111111]/60 hover:border-[#111111]/40 bg-white'}`}>
+                      {p}
+                      {activePlacements.includes(p) && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <p className="text-xs font-medium text-[#111111]/50 uppercase tracking-widest mb-3">Artwork upload</p>
+                <div className="flex flex-col gap-3 mb-3">
+                  <a href="/downloads/moistfoundry-print_templates-1.0.zip" download
+                    className="flex items-center justify-between border border-[#111111] rounded-md px-4 py-3 text-xs font-medium text-[#111111] hover:bg-[#111111] hover:text-white transition-colors">
+                    <span>Download print templates</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  </a>
+                  <p className="text-xs text-[#111111]/40">We recommend using our .ai templates. One template covers front and back.</p>
+                </div>
+                <div className="flex flex-col gap-5">
+                  {frontActive && (
+                    <div>
+                      <p className="text-xs text-[#111111]/50 mb-2 uppercase tracking-widest">Front artwork</p>
+                      <ArtworkUpload side="front" file={frontArtwork} preview={frontPreview}
+                        onFile={f => handleArtwork(f, 'front')} onClear={() => { setFrontArtwork(null); setFrontPreview(null) }}
+                        error={frontFileError} />
+                    </div>
+                  )}
+                  {backActive && (
+                    <div>
+                      <p className="text-xs text-[#111111]/50 mb-2 uppercase tracking-widest">Back artwork <span className="normal-case font-normal">(optional)</span></p>
+                      <ArtworkUpload side="back" file={backArtwork} preview={backPreview}
+                        onFile={f => handleArtwork(f, 'back')} onClear={() => { setBackArtwork(null); setBackPreview(null) }}
+                        error={backFileError} />
+                    </div>
+                  )}
+                  {!frontActive && !backActive && (
+                    <p className="text-xs text-[#111111]/40">Select a print placement to upload artwork.</p>
+                  )}
+                </div>
+              </section>
             </div>
           </Accordion>
 
           {/* Neck label */}
-          <Accordion title={`Neck label — ${neckLabel.type}`}>
+          <Accordion
+            title="Neck Label"
+            summary={neckLabelComplete ? neckLabelSummary() : 'No Selection'}
+            complete={neckLabelComplete}
+          >
             <NeckLabelSection config={neckLabel} onChange={setNeckLabel} />
           </Accordion>
 
           {/* Quantity */}
-          <div className="border border-[#E5E5E5] p-5">
+          <div className="border border-[#E5E5E5] p-5 rounded-lg bg-white">
             <p className="text-sm font-semibold mb-4">Quantity</p>
             <div className="flex items-center gap-3 mb-3">
               <button type="button" onClick={() => setTotalQty(q => Math.max(50, q - 10))}
-                className="w-10 h-10 border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center shrink-0">-</button>
+                className="w-10 h-10 rounded-md border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center shrink-0">-</button>
               <input type="number" value={totalQty} min={50}
                 onChange={e => setTotalQty(Math.max(50, parseInt(e.target.value) || 50))}
-                className="flex-1 text-center text-sm font-bold border border-[#E5E5E5] py-2.5 focus:outline-none focus:border-[#111111]" />
+                className="flex-1 text-center text-sm font-bold border border-[#E5E5E5] rounded-md py-2.5 focus:outline-none focus:border-[#111111]" />
               <button type="button" onClick={() => setTotalQty(q => q + 10)}
-                className="w-10 h-10 border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center shrink-0">+</button>
+                className="w-10 h-10 rounded-md border border-[#E5E5E5] text-lg hover:border-[#111111] transition-colors flex items-center justify-center shrink-0">+</button>
             </div>
             <p className="text-xs text-[#111111]/40 mb-4">Minimum 50 pieces.</p>
             <div className="flex flex-col border border-[#E5E5E5] overflow-hidden">
@@ -928,7 +1064,7 @@ export default function ConfigureClient() {
           </div>
 
           {/* Rush */}
-          <div className="border border-[#E5E5E5] p-5">
+          <div className="border border-[#E5E5E5] p-5 rounded-lg bg-white">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold">Rush order</p>
@@ -941,28 +1077,35 @@ export default function ConfigureClient() {
             </div>
             {rush && <p className="text-xs text-[#111111]/50 mt-3 pt-3 border-t border-[#E5E5E5]">Rush premium: +&#8377;{getRushCharge(totalQty)}/piece</p>}
           </div>
-
-          {/* Notes */}
-          <div className="border border-[#E5E5E5] p-5">
-            <p className="text-sm font-semibold mb-3">Special requirements</p>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
-              placeholder="Color codes, references, special instructions…"
-              className="w-full border border-[#E5E5E5] px-3 py-2.5 text-sm focus:outline-none focus:border-[#111111] resize-none" />
-          </div>
         </div>
 
-        <div className="border-t border-[#E5E5E5] px-6 py-5">
+        <div className="border-t border-[#E5E5E5] bg-white px-6 pt-4 pb-5">
+          {/* Pricing summary — Assembly style */}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="text-xs text-[#111111]/40 mb-0.5">Unit cost</p>
+              <p className="text-lg font-bold">&#8377;{pricePerPiece.toLocaleString('en-IN')}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-[#111111]/40 mb-0.5">Est. delivery</p>
+              <p className="text-sm font-medium">{deliveryDate}</p>
+            </div>
+          </div>
+          {discount > 0 && (
+            <p className="text-xs text-green-600 font-medium mb-3">Volume discount applied: -{(discount * 100).toFixed(0)}%</p>
+          )}
           {!canProceedToSummary() && (
             <p className="text-xs text-[#111111]/40 mb-3 text-center">
-              {activePlacements.length === 0 ? 'Select a placement' :
+              {!colorConfirmed ? 'Confirm garment colour' :
+               activePlacements.length === 0 ? 'Select a placement' :
                (frontActive && !frontTechnique) || (backActive && !backTechnique) ? 'Select technique for each active placement' :
                'Complete all sections above'}
             </p>
           )}
           <button type="button" disabled={!canProceedToSummary()}
             onClick={() => { setSizeQty(distributeQty(totalQty)); setScreen('summary') }}
-            className={`w-full py-3.5 text-sm font-medium transition-colors ${canProceedToSummary() ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'}`}>
-            Next: Order summary
+            className={`w-full py-3.5 text-sm font-medium transition-colors rounded-md ${canProceedToSummary() ? 'bg-[#111111] text-white hover:bg-black' : 'bg-[#111111]/10 text-[#111111]/30 cursor-not-allowed'}`}>
+            Next: Order summary →
           </button>
         </div>
       </div>
