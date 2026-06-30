@@ -254,11 +254,14 @@ const emptyAddress = (): ShippingState => ({
 
 // ─── GARMENT SVG ─────────────────────────────────────────────────────────────
 
-function GarmentSVG({ color, activePlacements, frontPreview, backPreview, activeView, productName }: {
+function GarmentSVG({ color, activePlacements, frontPreview, backPreview, activeView, productName, neckLabel, neckLabelPreview }: {
   color: string; activePlacements: string[]; frontPreview: string | null
-  backPreview: string | null; activeView: 'Front' | 'Back'; productName: string
+  backPreview: string | null; activeView: 'Front' | 'Back' | 'Neck'; productName: string
+  neckLabel?: NeckLabelConfig; neckLabelPreview?: string | null
 }) {
-  const showFront = activeView === 'Front'
+  const showFront = activeView !== 'Back'
+  const isNeckZoom = activeView === 'Neck'
+  const hasNeckLabel = !!neckLabel && neckLabel.type !== 'No label'
   const gc = getColorHex(color)
   const isDark = ['rgb(23,23,23)','#1B2A4A','#2D5016','#191970','#006400','#355E3B','#4B5320',
     '#380032','#800000','#800080','#4B0082'].includes(gc) ||
@@ -275,12 +278,28 @@ function GarmentSVG({ color, activePlacements, frontPreview, backPreview, active
     </svg>
   )
 
+  if (isNeckZoom) return (
+    <svg viewBox="0 0 300 260" width="100%" style={{ maxWidth: 320 }} xmlns="http://www.w3.org/2000/svg">
+      <path d="M20 200 C20 80 100 30 150 30 C200 30 280 80 280 200 L280 260 L20 260 Z" fill={gc} stroke={sc} strokeWidth="1.5" />
+      <path d="M95 48 C108 82 128 100 150 100 C172 100 192 82 205 48" fill="none" stroke={sc} strokeWidth="2.5" />
+      <circle cx="150" cy="150" r="5" fill="none" stroke={sc} strokeWidth="1.5" />
+      {neckLabelPreview ? (
+        <image href={neckLabelPreview} x="118" y="92" width="64" height="26" preserveAspectRatio="xMidYMid meet" />
+      ) : hasNeckLabel ? (
+        <rect x="118" y="92" width="64" height="26" rx="2" fill="white" stroke="#111111" strokeWidth="1.5" />
+      ) : null}
+    </svg>
+  )
+
   return (
     <svg viewBox="0 0 300 320" width="100%" style={{ maxWidth: 320 }} xmlns="http://www.w3.org/2000/svg">
       <path d="M75 80 L40 110 L55 125 L65 115 L65 270 L235 270 L235 115 L245 125 L260 110 L225 80 C210 75 195 70 180 68 C175 85 162 95 150 95 C138 95 125 85 120 68 C105 70 90 75 75 80Z" fill={gc} stroke={sc} strokeWidth="1.5" />
       <path d="M65 115 L40 110 L55 125 L65 165 Z" fill={gc} stroke={sc} strokeWidth="1.5" />
       <path d="M235 115 L260 110 L245 125 L235 165 Z" fill={gc} stroke={sc} strokeWidth="1.5" />
       {showFront && <path d="M120 68 C125 85 138 95 150 95 C162 95 175 85 180 68" fill="none" stroke={sc} strokeWidth="2" />}
+      {showFront && hasNeckLabel && (
+        <rect x="138" y="78" width="24" height="10" rx="1.5" fill="white" stroke="#111111" strokeWidth="1.25" opacity="0.9" />
+      )}
       <path d="M100 90 L90 270 L110 270 L115 90Z" fill={hl} />
       {showFront && activePlacements.includes('Front') && !frontPreview && <rect x="120" y="130" width="60" height="60" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />}
       {!showFront && activePlacements.includes('Back') && !backPreview && <rect x="120" y="130" width="60" height="60" rx="2" fill="none" stroke="#111111" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.4" />}
@@ -292,14 +311,22 @@ function GarmentSVG({ color, activePlacements, frontPreview, backPreview, active
 
 // ─── ACCORDION ───────────────────────────────────────────────────────────────
 
-function Accordion({ title, summary, complete = false, children, defaultOpen = false }: {
+function Accordion({ title, summary, complete = false, children, defaultOpen = false, open: controlledOpen, onToggle }: {
   title: string
   summary?: string
   complete?: boolean
   children: React.ReactNode | ((controls: { close: () => void }) => React.ReactNode)
   defaultOpen?: boolean
+  open?: boolean
+  onToggle?: (next: boolean) => void
 }) {
-  const [open, setOpen] = useState(defaultOpen)
+  const [internalOpen, setInternalOpen] = useState(defaultOpen)
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : internalOpen
+  const setOpen = (next: boolean) => {
+    if (isControlled) onToggle?.(next)
+    else setInternalOpen(next)
+  }
   const content = typeof children === 'function' ? children({ close: () => setOpen(false) }) : children
   return (
     <div className={`border transition-colors rounded-lg overflow-hidden ${open ? 'border-[#DADADA] bg-white' : 'border-transparent bg-[#F7F7F7] hover:bg-[#F2F2F2]'}`}>
@@ -546,7 +573,62 @@ function TechniqueSelector({ label, selected, onChange }: {
   )
 }
 
-// ─── ADDRESS FORM ─────────────────────────────────────────────────────────────
+// ─── ARTWORK POSITION CONTROLS ────────────────────────────────────────────────
+
+type HAlign = 'left' | 'center' | 'right'
+type VAlign = 'top' | 'middle' | 'bottom'
+
+function PositionIcons({ h, v, onH, onV }: { h: HAlign; v: VAlign; onH: (h: HAlign) => void; onV: (v: VAlign) => void }) {
+  const btn = (active: boolean) =>
+    `w-8 h-8 flex items-center justify-center border rounded-md transition-colors ${active ? 'border-[#111111] bg-[#111111] text-white' : 'border-[#E5E5E5] text-[#111111]/50 hover:border-[#111111]/40 bg-white'}`
+  return (
+    <div className="flex items-center gap-1.5">
+      <button type="button" title="Align left" onClick={() => onH('left')} className={btn(h === 'left')}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="3" x2="4" y2="21" /><rect x="8" y="7" width="10" height="4" /><rect x="8" y="14" width="14" height="4" /></svg>
+      </button>
+      <button type="button" title="Align center" onClick={() => onH('center')} className={btn(h === 'center')}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="3" x2="12" y2="21" /><rect x="7" y="7" width="10" height="4" /><rect x="5" y="14" width="14" height="4" /></svg>
+      </button>
+      <button type="button" title="Align right" onClick={() => onH('right')} className={btn(h === 'right')}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="20" y1="3" x2="20" y2="21" /><rect x="6" y="7" width="10" height="4" /><rect x="2" y="14" width="14" height="4" /></svg>
+      </button>
+      <span className="w-px h-5 bg-[#E5E5E5] mx-1" />
+      <button type="button" title="Align top" onClick={() => onV('top')} className={btn(v === 'top')}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="4" x2="21" y2="4" /><rect x="7" y="8" width="4" height="10" /><rect x="14" y="8" width="4" height="6" /></svg>
+      </button>
+      <button type="button" title="Align middle" onClick={() => onV('middle')} className={btn(v === 'middle')}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12" /><rect x="7" y="7" width="4" height="10" /><rect x="14" y="5" width="4" height="14" /></svg>
+      </button>
+      <button type="button" title="Align bottom" onClick={() => onV('bottom')} className={btn(v === 'bottom')}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="20" x2="21" y2="20" /><rect x="7" y="6" width="4" height="10" /><rect x="14" y="10" width="4" height="6" /></svg>
+      </button>
+    </div>
+  )
+}
+
+function NumberStepper({ label, value, onChange, hint, disabled = false, step = 0.5 }: {
+  label: string; value: number; onChange?: (v: number) => void; hint?: string; disabled?: boolean; step?: number
+}) {
+  return (
+    <div>
+      <p className="text-xs font-medium text-[#111111]/50 mb-1.5 flex items-center gap-1">
+        {label}
+        {hint && (
+          <span title={hint} className="w-3.5 h-3.5 rounded-full border border-[#111111]/20 text-[9px] flex items-center justify-center text-[#111111]/40">?</span>
+        )}
+      </p>
+      <div className={`flex items-center border rounded-md overflow-hidden ${disabled ? 'border-[#EAEAEA] bg-[#F7F7F7]' : 'border-[#E5E5E5] bg-white'}`}>
+        <button type="button" disabled={disabled} onClick={() => onChange?.(Math.max(0, Math.round((value - step) * 10) / 10))}
+          className="w-8 h-9 flex items-center justify-center text-[#111111]/40 hover:text-[#111111] disabled:opacity-30">−</button>
+        <span className={`flex-1 text-center text-sm ${disabled ? 'text-[#111111]/30' : 'text-[#111111]'}`}>{value.toFixed(1)}</span>
+        <button type="button" disabled={disabled} onClick={() => onChange?.(Math.round((value + step) * 10) / 10)}
+          className="w-8 h-9 flex items-center justify-center text-[#111111]/40 hover:text-[#111111] disabled:opacity-30">+</button>
+      </div>
+    </div>
+  )
+}
+
+
 
 function AddressForm({ values, onChange, prefix }: { values: ShippingState; onChange: (v: ShippingState) => void; prefix: string }) {
   const f = (field: keyof ShippingState) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -597,7 +679,7 @@ export default function ConfigureClient() {
   const router = useRouter()
 
   const [screen, setScreen] = useState<Screen>('picker')
-  const [activeView, setActiveView] = useState<'Front' | 'Back'>('Front')
+  const [activeView, setActiveView] = useState<'Front' | 'Back' | 'Neck'>('Front')
   const [submitting, setSubmitting] = useState(false)
   const [hydrated, setHydrated] = useState(false)
 
@@ -617,6 +699,27 @@ export default function ConfigureClient() {
   const [backPreview, setBackPreview] = useState<string | null>(null)
   const [frontFileError, setFrontFileError] = useState('')
   const [backFileError, setBackFileError] = useState('')
+
+  // Per-side artwork position & sizing (cm), Rovo-style
+  const [frontPos, setFrontPos] = useState<{ h: HAlign; v: VAlign }>({ h: 'center', v: 'middle' })
+  const [backPos, setBackPos] = useState<{ h: HAlign; v: VAlign }>({ h: 'center', v: 'middle' })
+  const [frontWidth, setFrontWidth] = useState(20.0)
+  const [frontFromNeck, setFrontFromNeck] = useState(20.5)
+  const [frontFromCenter, setFrontFromCenter] = useState(0.0)
+  const [backWidth, setBackWidth] = useState(20.0)
+  const [backFromNeck, setBackFromNeck] = useState(20.5)
+  const [backFromCenter, setBackFromCenter] = useState(0.0)
+  const [smallestSize, setSmallestSize] = useState('XS - 37 x 50 cm')
+  const [guidelineMaxArea, setGuidelineMaxArea] = useState(true)
+  const [guidelineLeftChest, setGuidelineLeftChest] = useState(false)
+
+  // Neck label artwork upload
+  const [neckLabelFile, setNeckLabelFile] = useState<File | null>(null)
+  const [neckLabelPreview, setNeckLabelPreview] = useState<string | null>(null)
+  const [neckLabelFileError, setNeckLabelFileError] = useState('')
+
+  // Which accordion is open — drives the contextual Front/Neck/Back toggle on the left
+  const [activeAccordion, setActiveAccordion] = useState<'color' | 'artwork' | 'neck' | null>('color')
 
   const [neckLabel, setNeckLabel] = useState<NeckLabelConfig>({
     type: 'No label', dimension: '50x18mm', position: 'Below neck tape (5mm)', cornerStyle: '2 side',
@@ -650,6 +753,21 @@ export default function ConfigureClient() {
     setBackPreview(null)
     setFrontFileError('')
     setBackFileError('')
+    setFrontPos({ h: 'center', v: 'middle' })
+    setBackPos({ h: 'center', v: 'middle' })
+    setFrontWidth(20.0)
+    setFrontFromNeck(20.5)
+    setFrontFromCenter(0.0)
+    setBackWidth(20.0)
+    setBackFromNeck(20.5)
+    setBackFromCenter(0.0)
+    setSmallestSize('XS - 37 x 50 cm')
+    setGuidelineMaxArea(true)
+    setGuidelineLeftChest(false)
+    setNeckLabelFile(null)
+    setNeckLabelPreview(null)
+    setNeckLabelFileError('')
+    setActiveAccordion('color')
     setNeckLabel({ type: 'No label', dimension: '50x18mm', position: 'Below neck tape (5mm)', cornerStyle: '2 side' })
     setTotalQty(50)
     setRush(false)
@@ -751,6 +869,21 @@ export default function ConfigureClient() {
     const url = URL.createObjectURL(file)
     if (side === 'front') { setFrontArtwork(file); setFrontPreview(url) }
     else { setBackArtwork(file); setBackPreview(url) }
+  }
+
+  function handleNeckLabelFile(file: File) {
+    setNeckLabelFileError('')
+    const ext = '.' + (file.name.split('.').pop()?.toLowerCase() ?? '')
+    if (!ALLOWED_NECK_LABEL_EXTENSIONS.includes(ext)) {
+      setNeckLabelFileError(`Only ${ALLOWED_NECK_LABEL_EXTENSIONS.join(', ')} files accepted`)
+      return
+    }
+    if (file.size > MAX_BYTES) {
+      setNeckLabelFileError(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum 4.5MB`)
+      return
+    }
+    setNeckLabelFile(file)
+    setNeckLabelPreview(URL.createObjectURL(file))
   }
 
   function togglePlacement(p: string) {
